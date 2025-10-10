@@ -30,7 +30,7 @@ type Transaction struct {
 // CreateTransactionRequest represents request to create a new transaction
 type CreateTransactionRequest struct {
 	UserID      int64           `json:"user_id" binding:"required" validate:"required,gt=0"`
-	Amount      decimal.Decimal `json:"amount" binding:"required" validate:"required,gt=0"`
+	Amount      decimal.Decimal `json:"amount" binding:"required"`
 	Category    string          `json:"category" binding:"required" validate:"required,min=1,max=100"`
 	Description string          `json:"description" validate:"omitempty,max=500"`
 	Type        TransactionType `json:"type" binding:"required,oneof=income expense" validate:"required,oneof=income expense"`
@@ -38,7 +38,7 @@ type CreateTransactionRequest struct {
 
 // UpdateTransactionRequest represents request to update a transaction
 type UpdateTransactionRequest struct {
-	Amount      *decimal.Decimal `json:"amount,omitempty" validate:"omitempty,gt=0"`
+	Amount      *decimal.Decimal `json:"amount,omitempty"`
 	Category    *string          `json:"category,omitempty" validate:"omitempty,min=1,max=100"`
 	Description *string          `json:"description,omitempty" validate:"omitempty,max=500"`
 	Type        *TransactionType `json:"type,omitempty" validate:"omitempty,oneof=income expense"`
@@ -57,6 +57,6 @@ type TransactionFilter struct {
 	UserID   int64            `form:"user_id" validate:"omitempty,gte=0"`
 	Type     *TransactionType `form:"type" validate:"omitempty,oneof=income expense"`
 	Category *string          `form:"category" validate:"omitempty,min=1,max=100"`
-	Page     int              `form:"page" binding:"min=1" validate:"omitempty,gte=1"`
-	PageSize int              `form:"page_size" binding:"min=1,max=100" validate:"omitempty,gte=1,lte=100"`
+	Page     int              `form:"page" validate:"omitempty,gte=1"`
+	PageSize int              `form:"page_size" validate:"omitempty,gte=1,lte=100"`
 }

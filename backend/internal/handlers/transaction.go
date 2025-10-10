@@ -132,6 +132,14 @@ func (h *TransactionHandler) List(c *gin.Context) {
 		return
 	}
 
+	// Set default values for pagination if not provided
+	if filter.Page == 0 {
+		filter.Page = 1
+	}
+	if filter.PageSize == 0 {
+		filter.PageSize = 10
+	}
+
 	response, err := h.service.List(c.Request.Context(), &filter)
 	if err != nil {
 		h.logger.Error("handler: failed to list transactions", "error", err)

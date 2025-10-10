@@ -11,12 +11,12 @@ CREATE TABLE IF NOT EXISTS users (
 -- Create index for email lookups
 CREATE INDEX idx_users_email ON users(email);
 
--- Add foreign key constraint to transactions table
-ALTER TABLE transactions
-    ADD CONSTRAINT fk_transactions_user_id
-    FOREIGN KEY (user_id)
-    REFERENCES users(id)
-    ON DELETE CASCADE;
+-- TODO: Add foreign key constraint later when implementing JWT authentication
+-- ALTER TABLE transactions
+--     ADD CONSTRAINT fk_transactions_user_id
+--     FOREIGN KEY (user_id)
+--     REFERENCES users(id)
+--     ON DELETE CASCADE;
 
 -- Create trigger to update updated_at on row update
 CREATE TRIGGER update_users_updated_at
