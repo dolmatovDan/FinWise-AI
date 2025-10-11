@@ -34,7 +34,6 @@ fun DashboardScreen() {
             AddTransactionSection()
             TransactionsTable()
             ChartsSection()
-            TipsSection()
             Row (
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),

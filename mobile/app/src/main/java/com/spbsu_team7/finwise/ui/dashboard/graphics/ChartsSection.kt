@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 
 import com.spbsu_team7.finwise.ui.theme.ExpenseRed
 import com.spbsu_team7.finwise.ui.theme.IncomeGreen
+import com.spbsu_team7.finwise.ui.transactions.transaction.AddTransactionSection
+import com.spbsu_team7.finwise.ui.transactions.transaction.TransactionsTable
 
 @Composable
 fun ChartsSection() {
