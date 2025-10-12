@@ -1,17 +1,23 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.spbsu_team7.finwise"
-    compileSdk = 35
+    compileSdk = 36
+
+
 
     defaultConfig {
         applicationId = "com.spbsu_team7.finwise"
         minSdk = 34
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -27,17 +33,24 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+
+    hilt {
+        enableAggregatingTask = false
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
+
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget("17")
     }
 }
+
 
 dependencies {
 
@@ -49,8 +62,12 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.bundles.compose)
 
+    implementation(libs.bundles.compose)
+    implementation(libs.bundles.viewmodel)
     implementation(libs.bundles.vico)
+
+    implementation(libs.bundles.hilt)
+
+    ksp(libs.hilt.compiler)
 }
