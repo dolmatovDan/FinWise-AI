@@ -31,7 +31,7 @@ fun ChartsSection() {
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Расходы по категориям", style = MaterialTheme.typography.titleLarge)
+                Text("Расходы по категориям", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(12.dp))
                 IncomeExpensePieChart()
             }
@@ -48,7 +48,7 @@ fun ChartsSection() {
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Доход и расход по месяцам", style = MaterialTheme.typography.titleLarge)
+                Text("Доход и расход по месяцам", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(12.dp))
                 IncomeExpenseLineChart()
             }

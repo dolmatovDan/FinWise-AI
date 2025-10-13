@@ -55,8 +55,7 @@ fun NavigationBar(
             ) {
                 items.forEachIndexed { index, item ->
                     NavigationChip(
-                        label = item.title,
-                        icon = item.icon,
+                        item = item,
                         selected = selectedItem == index,
                         onClick = { onSelect(index) },
                         modifier = Modifier.weight(0.1f)

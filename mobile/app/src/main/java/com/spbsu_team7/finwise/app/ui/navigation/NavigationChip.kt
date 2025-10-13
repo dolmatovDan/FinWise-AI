@@ -13,12 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
-data class NavItem(val title: String, val icon: ImageVector)
+data class NavItem(val title: String, val icon: ImageVector, val iconFilled: ImageVector)
 
 @Composable
 fun NavigationChip(
-    label: String,
-    icon: ImageVector,
+    item: NavItem,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -26,8 +25,8 @@ fun NavigationChip(
     val backgroundColor = if (selected) MaterialTheme.colorScheme.primaryContainer
     else MaterialTheme.colorScheme.secondaryContainer
 
-    val contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
-    else MaterialTheme.colorScheme.onSurface
+    val icon = if (selected) item.iconFilled
+    else item.icon
 
     Surface(
         shape = MaterialTheme.shapes.medium,
@@ -42,7 +41,7 @@ fun NavigationChip(
 
         Icon(
             imageVector = icon,
-            contentDescription = label,
+            contentDescription = item.title,
             tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(vertical = 10.dp)
         )

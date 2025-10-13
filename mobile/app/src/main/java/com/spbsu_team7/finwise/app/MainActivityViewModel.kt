@@ -2,6 +2,8 @@ package com.spbsu_team7.finwise.app
 
 import android.net.http.HttpException
 import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,15 +15,20 @@ import com.spbsu_team7.finwise.core.model.Status
 import com.spbsu_team7.finwise.core.model.Transaction
 import com.spbsu_team7.finwise.core.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
 
 data class Events(
+    val sendNewCategory: (Category) -> Unit,
+    val sendNewTransaction: (Transaction) -> Unit,
     val onRetry: () -> Unit
 )
 
-interface UiState {
+sealed interface UiState {
     data class Success(
         val transactions: List<Transaction>,
         val status: Status,
@@ -29,7 +36,9 @@ interface UiState {
         val advices: List<Advice>
     ) : UiState
 
-    object Error : UiState
+    data class Error(
+        val error: String
+    ) : UiState
 
     object Loading : UiState
 }
@@ -38,15 +47,38 @@ interface UiState {
 class ViewModel @Inject constructor (
     private val repository: Repository
 ) : ViewModel() {
-    private var uiState: UiState by mutableStateOf(UiState.Loading)
+    private var _uiState = MutableStateFlow<UiState>(UiState.Loading)
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     init {
         updateMain()
     }
 
+    private fun sendTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            try {
+                repository.sendTransaction(transaction)
+                updateMain()
+            } catch (e: Exception) {
+                Log.e("IO", "${e.message} in sendNewTransaction")
+            }
+        }
+    }
+
+    private fun sendCategory(category: Category) {
+        viewModelScope.launch {
+            try {
+                repository.sendCategory(category)
+                updateMain()
+            } catch (e: Exception) {
+                Log.e("IO", "${e.message} in sendNewCategory")
+            }
+        }
+    }
+
     private fun updateMain() {
         viewModelScope.launch {
-            uiState =
+            _uiState.value =
                 try {
                     UiState.Success(
                         transactions = repository.getTransactions(),
@@ -56,13 +88,21 @@ class ViewModel @Inject constructor (
                     )
                 } catch (e: IOException) {
                     Log.e("IO", "${e.message} in updateMain")
-                    UiState.Error
+                    UiState.Error("Ошибка при обновлении, проверьте соединение")
                 } catch (e: HttpException) {
                     Log.e("HTTP", "${e.message} in updateMain")
-                    UiState.Error
+                    UiState.Error("Ошибка при обновлении, проверьте соединение")
                 }
         }
     }
 
-    fun getState() = uiState
+    fun getEvents() =
+        Events(
+            sendNewCategory = ::sendCategory,
+            sendNewTransaction = ::sendTransaction,
+            onRetry = ::updateMain
+        )
+
+    @Composable
+    fun getState() = uiState.collectAsState().value
 }

@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: ViewModel by viewModels()
             FinanceTheme {
-                MainScreen(viewModel.getState())
+                MainScreen(viewModel.getState(), viewModel.getEvents())
             }
         }
     }

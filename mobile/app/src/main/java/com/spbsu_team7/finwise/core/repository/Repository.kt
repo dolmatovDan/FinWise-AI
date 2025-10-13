@@ -12,5 +12,7 @@ interface Repository {
     suspend fun getStatus(): Status
     suspend fun getCategories(): List<Category>
     suspend fun getAdvices(): List<Advice>
+    suspend fun sendTransaction(transaction: Transaction)
+    suspend fun sendCategory(category: Category)
 }
 

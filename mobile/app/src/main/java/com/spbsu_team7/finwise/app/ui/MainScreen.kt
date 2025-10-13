@@ -4,38 +4,41 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.automirrored.outlined.CompareArrows
 import androidx.compose.material.icons.automirrored.outlined.Label
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.spbsu_team7.finwise.app.Events
 import com.spbsu_team7.finwise.app.UiState
 import com.spbsu_team7.finwise.app.ui.categories.CategoriesScreen
 import com.spbsu_team7.finwise.app.ui.chatbot.ChatBotScreen
 import com.spbsu_team7.finwise.app.ui.dashboard.DashboardScreen
 import com.spbsu_team7.finwise.app.ui.navigation.NavItem
 import com.spbsu_team7.finwise.app.ui.navigation.NavigationBar
+import com.spbsu_team7.finwise.app.ui.topbar.TopBar
 import com.spbsu_team7.finwise.app.ui.transactions.TransactionsScreen
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun MainScreen(
-    uiState: UiState
-) {
-
+fun MainScreen(uiState: UiState, events: Events) {
     val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
 
     val items = listOf(
-        NavItem("Dashboard", Icons.Outlined.Dashboard),
-        NavItem("Транзакции", Icons.AutoMirrored.Outlined.CompareArrows),
-        NavItem("Категории", Icons.AutoMirrored.Outlined.Label),
-        NavItem("AI Советы", Icons.Outlined.Lightbulb)
+        NavItem("Dashboard", Icons.Outlined.Dashboard, Icons.Filled.Dashboard,),
+        NavItem("Транзакции", Icons.AutoMirrored.Outlined.CompareArrows, Icons.AutoMirrored.Filled.CompareArrows),
+        NavItem("Категории", Icons.AutoMirrored.Outlined.Label, Icons.AutoMirrored.Filled.Label),
+        NavItem("AI Советы", Icons.Outlined.Lightbulb, Icons.Filled.Lightbulb)
     )
 
     Scaffold(
@@ -45,7 +48,8 @@ fun MainScreen(
                 ind -> coroutineScope.launch { pagerState.animateScrollToPage(ind) }
             }
         )
-        }
+        },
+        topBar = { TopBar(uiState, events) }
     ) { paddingValues ->
         HorizontalPager(
             state = pagerState,
@@ -54,10 +58,10 @@ fun MainScreen(
                 .fillMaxSize()
         ) {page ->
             when (page) {
-                0 -> DashboardScreen(uiState)
-                1 -> TransactionsScreen(uiState)
-                2 -> CategoriesScreen(uiState)
-                3 -> ChatBotScreen(uiState)
+                0 -> DashboardScreen(uiState, events)
+                1 -> TransactionsScreen(uiState, events)
+                2 -> CategoriesScreen(uiState, events)
+                3 -> ChatBotScreen(uiState, events)
             }
         }
     }

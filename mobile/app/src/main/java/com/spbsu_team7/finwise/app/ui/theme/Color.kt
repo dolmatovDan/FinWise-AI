@@ -26,3 +26,5 @@ val md_theme_dark_error = Color(0xFFFFB4AB)
 
 val IncomeGreen = Color(0xFF46A753)
 val ExpenseRed = Color(0xFFE64C4A)
+
+val lightText = Color(0xFFA2A2A2)
