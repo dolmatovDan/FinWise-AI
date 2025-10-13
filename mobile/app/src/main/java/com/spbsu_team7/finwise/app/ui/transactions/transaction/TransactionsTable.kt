@@ -28,7 +28,10 @@ import kotlin.math.absoluteValue
 @Composable
 fun TransactionsTable(transactions: List<Transaction>) {
 
-        LazyColumn (
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("Операции", style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 7.dp))
+        LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -36,9 +39,9 @@ fun TransactionsTable(transactions: List<Transaction>) {
                 TransactionRow(transaction = ts)
             }
         }
+    }
 
-
-
+}
 //        Column(modifier = Modifier.padding(16.dp)) {
 //            Text("Операции", style = MaterialTheme.typography.titleLarge)
 //            Spacer(modifier = Modifier.height(12.dp))
@@ -52,7 +55,7 @@ fun TransactionsTable(transactions: List<Transaction>) {
 //            }
 //        }
 
-}
+
 
 @Composable
 fun TransactionRow(transaction: Transaction) {

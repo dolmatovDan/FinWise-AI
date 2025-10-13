@@ -4,9 +4,9 @@ import androidx.compose.ui.graphics.Color
 
 // 0xFFFFFFFF
 // 0xFFF5F5F7
-val md_theme_light_primary = Color(0xFF6B6F76)
+val md_theme_light_primary = Color(0xFF0E0D1B)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
-val md_theme_light_secondary = Color(0xFF6B6F76)
+val md_theme_light_secondary = Color(0xFFF1F2F2)
 val md_theme_light_background = Color(0xFFF4F8FD) // бэк для основного экрана
 val md_theme_light_surface = Color(0xFFFFFFFF) // цвет карточек
 val md_theme_light_onSurface = Color(0xFF000000)

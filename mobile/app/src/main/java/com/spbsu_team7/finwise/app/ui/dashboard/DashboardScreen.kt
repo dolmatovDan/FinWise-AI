@@ -12,8 +12,6 @@ import com.spbsu_team7.finwise.app.Events
 import com.spbsu_team7.finwise.app.UiState
 import com.spbsu_team7.finwise.app.ui.dashboard.graphics.ChartsSection
 import com.spbsu_team7.finwise.app.ui.dashboard.info.SummarySection
-import com.spbsu_team7.finwise.app.ui.dashboard.other.OpenSettings
-import com.spbsu_team7.finwise.app.ui.dashboard.other.Export
 import com.spbsu_team7.finwise.app.ui.special.ErrorScreen
 import com.spbsu_team7.finwise.app.ui.special.LoadingScreen
 
@@ -36,14 +34,6 @@ fun DashboardScreen(
 
                     SummarySection(uiState.status, modifier = Modifier.fillMaxWidth())
                     ChartsSection()
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OpenSettings(Modifier.weight(1f))
-                        Export(Modifier.weight(1f))
-                    }
                 }
             }
 

@@ -2,6 +2,7 @@ package com.spbsu_team7.finwise.app.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 
 val FinanceShapes = Shapes(

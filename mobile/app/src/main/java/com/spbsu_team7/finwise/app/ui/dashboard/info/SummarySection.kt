@@ -44,7 +44,7 @@ fun SummaryCard(title: String, amount: String, color: Color, modifier: Modifier 
         ) {
             Text(text = title, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = amount, color = color, style = MaterialTheme.typography.displayLarge.copy(fontSize = 20.sp))
+            Text(text = amount, color = color, style = MaterialTheme.typography.displayLarge)
         }
     }
 }
