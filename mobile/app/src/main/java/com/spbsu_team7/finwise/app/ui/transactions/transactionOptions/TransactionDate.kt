@@ -1,5 +1,6 @@
 package com.spbsu_team7.finwise.app.ui.transactions.transactionOptions
 
+import android.icu.text.SimpleDateFormat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -17,8 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.spbsu_team7.finwise.app.ui.transactions.transaction.convertMillisToDate
 import java.time.Instant
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun TransactionDate(modifier: Modifier, datePickerState: DatePickerState) {
@@ -63,4 +65,10 @@ fun TransactionDate(modifier: Modifier, datePickerState: DatePickerState) {
             )
         }
     }
+}
+
+
+fun convertMillisToDate(millis: Long): String {
+    val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    return formatter.format(Date(millis))
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TextWithOption
+import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionCategory
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionDate
 import java.nio.file.WatchEvent
 import java.time.Instant
@@ -41,72 +42,50 @@ fun AddTransactionSection() {
                     width = 1.dp,
                     color = MaterialTheme.colorScheme.outline,
                     shape = MaterialTheme.shapes.medium
-                ),
+                )
+                .height(300.dp),
             shape = MaterialTheme.shapes.medium,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             Column(modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Добавить операцию", style = MaterialTheme.typography.titleMedium)
+                Text("Новая операция", style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(0.4f))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().weight(1f)
                 ) {
                     var sum by remember { mutableStateOf("") }
                     TextWithOption(name = "Сумма", modifier = Modifier.weight(1f), value = sum, "0",valueChange = { sum = it })
                     val datePickerState = rememberDatePickerState()
                     TransactionDate(Modifier.weight(1f), datePickerState)
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ExposedDropdownMenuBoxSample(modifier = Modifier.weight(1f))
-                    OutlinedTextField(
-                        value = "",
-                        onValueChange = {},
-                        label = { Text("Комментарий") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                Button(
-                    onClick = { /* placeholder */ },
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline,
-                            shape = MaterialTheme.shapes.medium
-                        )
-                        .height(30.dp)
-                        .fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        disabledContentColor = MaterialTheme.colorScheme.surface,
-                    )
-                ) {
-                    Text("Добавить")
-                }
+                TransactionCategory(modifier = Modifier.weight(1f))
+                var sum by remember { mutableStateOf("") }
+                TextWithOption(name = "Описание", modifier = Modifier.weight(1f), value = sum, "Добавьте описание",valueChange = { sum = it })
+                AddTransactionButton(modifier = Modifier.weight(0.6f))
             }
 
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExposedDropdownMenuBoxSample(modifier: Modifier = Modifier) {
-    OutlinedTextField(
-        value = "Выбрать",
-        onValueChange = {},
-        label = { Text("Категории") },
-        modifier = modifier,
-        readOnly = true,
-        trailingIcon = {  }
-    )
+fun AddTransactionButton(modifier: Modifier) {
+    Button(
+        onClick = { /* placeholder */ },
+        modifier = modifier
+            .fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.surface,
+            disabledContentColor = MaterialTheme.colorScheme.surface,
+        ),
+        border = null,
+    ) {
+        Text("Добавить")
+    }
 }
 
-
-fun convertMillisToDate(millis: Long): String {
-    val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-    return formatter.format(Date(millis))
-}

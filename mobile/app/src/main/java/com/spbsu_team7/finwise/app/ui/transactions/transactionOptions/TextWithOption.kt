@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
@@ -12,8 +13,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -26,10 +34,13 @@ fun TextWithOption(
     onClick: (() -> Unit)? = null,
     trailingIcon: @Composable () -> Unit = {},
 ) {
-    val modifierWithCallback = if (onClick != null) Modifier.padding(horizontal = 0.dp).fillMaxSize().clickable { onClick() }
-    else Modifier.padding(horizontal = 0.dp).fillMaxSize()
+    val modifierWithCallback = if (onClick != null) Modifier.padding(horizontal = 0.dp).fillMaxWidth().clickable { onClick() }
+    else Modifier.padding(horizontal = 0.dp).fillMaxWidth()
+    var isFocused by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+
     Column(
-        modifier = modifier.height(60.dp),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Text(
@@ -41,6 +52,10 @@ fun TextWithOption(
             value = value,
             onValueChange = valueChange,
             textStyle = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.focusRequester(focusRequester)
+                .onFocusChanged { focusState ->
+                    isFocused = focusState.isFocused
+                },
             decorationBox = { innerTextField ->
                 Surface(
                     modifier = modifierWithCallback,
@@ -50,10 +65,10 @@ fun TextWithOption(
                     Row(
                         modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         trailingIcon()
-                        if (value.isEmpty()) {
+                        if (value.isEmpty() && !isFocused) {
                             Text(
                                 placeholder,
                                 style = MaterialTheme.typography.bodySmall,
