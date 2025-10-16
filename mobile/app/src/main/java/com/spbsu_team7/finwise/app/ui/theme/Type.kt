@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.sp
 val FinanceTypography = Typography(
     displayLarge = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.sp), // для отображение статуса
     headlineMedium = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold),
+    headlineLarge = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.SemiBold), // в DatePicker
     titleLarge = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold), // для названия приложения
     titleMedium = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold), // для наименований разделов
     bodyLarge = TextStyle(fontSize = 16.sp),

@@ -25,13 +25,14 @@ import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TextWithOption
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionCategory
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionDate
+import com.spbsu_team7.finwise.core.model.Category
 import java.nio.file.WatchEvent
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun AddTransactionSection() {
+fun AddTransactionSection(categories: List<Category>) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -42,28 +43,27 @@ fun AddTransactionSection() {
                     width = 1.dp,
                     color = MaterialTheme.colorScheme.outline,
                     shape = MaterialTheme.shapes.medium
-                )
-                .height(300.dp),
+                ),
             shape = MaterialTheme.shapes.medium,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             Column(modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Новая операция", style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(0.4f))
+                    modifier = Modifier.height(20.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+                    modifier = Modifier.fillMaxWidth().height(55.dp)
                 ) {
                     var sum by remember { mutableStateOf("") }
-                    TextWithOption(name = "Сумма", modifier = Modifier.weight(1f), value = sum, "0",valueChange = { sum = it })
+                    TextWithOption(name = "Сумма", modifier = Modifier.weight(1f), value = sum, "0", valueChange = { sum = it })
                     val datePickerState = rememberDatePickerState()
                     TransactionDate(Modifier.weight(1f), datePickerState)
                 }
-                TransactionCategory(modifier = Modifier.weight(1f))
-                var sum by remember { mutableStateOf("") }
-                TextWithOption(name = "Описание", modifier = Modifier.weight(1f), value = sum, "Добавьте описание",valueChange = { sum = it })
-                AddTransactionButton(modifier = Modifier.weight(0.6f))
+                TransactionCategory(modifier = Modifier.height(55.dp), categories = categories)
+                var description by remember { mutableStateOf("") }
+                TextWithOption(name = "Описание", modifier = Modifier.height(55.dp), value = description, "Добавьте описание", valueChange = { description = it })
+                AddTransactionButton(modifier = Modifier.height(30.dp))
             }
 
         }

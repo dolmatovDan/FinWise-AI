@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,11 +32,7 @@ fun TextWithOption(
     value: String,
     placeholder: String,
     valueChange: (String) -> Unit = {},
-    onClick: (() -> Unit)? = null,
-    trailingIcon: @Composable () -> Unit = {},
 ) {
-    val modifierWithCallback = if (onClick != null) Modifier.padding(horizontal = 0.dp).fillMaxWidth().clickable { onClick() }
-    else Modifier.padding(horizontal = 0.dp).fillMaxWidth()
     var isFocused by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
@@ -58,7 +55,7 @@ fun TextWithOption(
                 },
             decorationBox = { innerTextField ->
                 Surface(
-                    modifier = modifierWithCallback,
+                    modifier = Modifier.padding(horizontal = 0.dp).fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
                     color = MaterialTheme.colorScheme.secondaryContainer,
                 ) {
@@ -67,7 +64,6 @@ fun TextWithOption(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        trailingIcon()
                         if (value.isEmpty() && !isFocused) {
                             Text(
                                 placeholder,
@@ -79,5 +75,6 @@ fun TextWithOption(
                 }
             }
         )
+
     }
 }

@@ -2,6 +2,7 @@ package com.spbsu_team7.finwise.app.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -20,6 +21,9 @@ private val LightColors = lightColorScheme(
     secondaryContainer = md_theme_light_secondary_container,
     surfaceVariant = md_theme_light_onSurface,
     onSurfaceVariant = md_theme_light_onSurface,
+    tertiary = md_theme_light_primary,
+    onTertiary = md_theme_light_primary,
+    tertiaryContainer = md_theme_light_primary,
 )
 
 private val DarkColors = darkColorScheme(

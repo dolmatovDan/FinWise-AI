@@ -8,5 +8,6 @@ import androidx.compose.ui.unit.dp
 val FinanceShapes = Shapes(
     small = RoundedCornerShape(8.dp),
     medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp)
+    large = RoundedCornerShape(16.dp),
+    extraSmall = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
 )
