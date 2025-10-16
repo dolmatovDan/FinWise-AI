@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 from statsmodels.tsa.holtwinters import ExponentialSmoothing, Holt
 
 try:
-    from prophet import Prophet  # pip install prophet cmdstanpy
+    from prophet import Prophet
     _HAS_PROPHET = True
 except Exception:
     _HAS_PROPHET = False
@@ -69,11 +69,6 @@ def prepare_components_series(df: pd.DataFrame, freq: str="M") -> Tuple[pd.Serie
     return inc, exp, net
 
 def fit_and_forecast(history: pd.Series, steps: int, freq: str, method: str = "auto") -> pd.Series:
-    """
-    method — если помесячно и точек >= 18, пробуем Prophet; иначе Holt/Holt-Winters, 
-                  для годовой частоты Prophet при точках >= 5 
-                  (надо точнее посчитать точек сколько)
-    """
     if len(history) < 3:
         last = float(history.iloc[-1]) if len(history) else 0.0
         start = (history.index[-1] if len(history) else pd.Timestamp.today().normalize()) + \
@@ -107,7 +102,6 @@ def fit_and_forecast(history: pd.Series, steps: int, freq: str, method: str = "a
             fcst = m.predict(future).tail(steps)
             yhat = pd.Series(fcst["yhat"].values, index=pd.DatetimeIndex(fcst["ds"]), name="forecast")
 
-            # приводим к концу периода
             if pfreq == "M":
                 yhat.index = yhat.index.to_period("M").to_timestamp(how="end")
             else:
@@ -117,7 +111,6 @@ def fit_and_forecast(history: pd.Series, steps: int, freq: str, method: str = "a
                 yhat.index = pd.date_range(yhat.index[0], periods=len(yhat), freq=("A-DEC" if pfreq == "Y" else "M"))
             return yhat
         except Exception:
-            # мягкий откат на Holt
             pass
 
     try:
