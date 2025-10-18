@@ -1,15 +1,8 @@
 package com.spbsu_team7.finwise.app.ui.transactions.transaction
 
-import android.icu.text.SimpleDateFormat
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -17,21 +10,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TextWithOption
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionCategory
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionDate
-import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.convertMillisToDate
 import com.spbsu_team7.finwise.core.model.Category
 import com.spbsu_team7.finwise.core.model.Transaction
-import java.nio.file.WatchEvent
 import java.time.Instant
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun AddTransactionSection(

@@ -29,7 +29,7 @@ import kotlin.getValue
 import kotlin.math.absoluteValue
 
 @Composable
-fun TransactionsTable(transactions: List<Transaction>) {
+fun TransactionsTable(uiState: UiState.Success) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Операции", style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(horizontal = 7.dp))
@@ -37,27 +37,13 @@ fun TransactionsTable(transactions: List<Transaction>) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(items = transactions) { ts ->
+            items(items = uiState.transactions) { ts ->
                 TransactionRow(transaction = ts)
             }
         }
     }
 
 }
-//        Column(modifier = Modifier.padding(16.dp)) {
-//            Text("Операции", style = MaterialTheme.typography.titleLarge)
-//            Spacer(modifier = Modifier.height(12.dp))
-//            HorizontalDivider()
-//            Spacer(modifier = Modifier.height(8.dp))
-//            LazyColumn(modifier = Modifier.heightIn(max = 200.dp)) {
-//                items(sampleTransactions) { tx ->
-//                    TransactionRow(transaction = tx)
-//                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-//                }
-//            }
-//        }
-
-
 
 @Composable
 fun TransactionRow(transaction: Transaction) {
@@ -104,15 +90,3 @@ fun TransactionRow(transaction: Transaction) {
 
     }
 }
-
-//
-//@Composable
-//fun TransactionRow(transaction: Transaction) {
-//    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-//        val textColor = if (transaction.amount > 0) IncomeGreen else ExpenseRed
-//        Text(transaction.date.toString(), modifier = Modifier.weight(0.3f))
-//        Text(transaction.amount.toString() + " $", modifier = Modifier.weight(0.3f),
-//            color = textColor)
-//        Text(transaction.category.name, modifier = Modifier.weight(0.2f))
-//    }
-//}

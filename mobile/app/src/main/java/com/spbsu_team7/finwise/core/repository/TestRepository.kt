@@ -46,27 +46,22 @@ class TestRepository : Repository {
         Advice("Меньше надо есть!")
     )
 
-    override suspend fun getTransactions(): List<Transaction>
-        {
-            Log.d("print", transactionList.map { it.name }.toString())
-            return transactionList
-        }
+    override suspend fun getTransactions(): List<Transaction> = transactionList
 
-    override suspend fun getStatus(): Status {
-        Log.d("status", "status")
-        return Status(
+
+    override suspend fun getStatus(): Status =
+        Status(
             transactionList.filter { it.amount >= 0 }.sumOf { it.amount },
             transactionList.filter { it.amount < 0 }.sumOf { it.amount.absoluteValue },
             transactionList.sumOf { it.amount }
         )
-    }
+
 
     override suspend fun getCategories(): List<Category> = categoryList
 
     override suspend fun getAdvices(): List<Advice> = adviceList
 
     override suspend fun sendTransaction(transaction: Transaction) {
-        Log.d("add", "add")
         transactionList.add(transaction)
     }
 

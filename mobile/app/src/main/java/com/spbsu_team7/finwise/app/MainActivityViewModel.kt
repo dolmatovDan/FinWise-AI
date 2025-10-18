@@ -51,11 +51,6 @@ class ViewModel @Inject constructor (
 ) : ViewModel() {
     private var _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
-    var events = Events(
-        sendCategory = ::sendCategory,
-        sendTransaction = ::sendTransaction,
-        onRetry = ::updateMain
-    )
 
     init {
         updateMain()
@@ -65,12 +60,11 @@ class ViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 repository.sendTransaction(transaction)
-                Log.d("send", "send")
+                updateMain()
             } catch (e: Exception) {
                 Log.e("IO", "${e.message} in sendNewTransaction")
             }
         }
-        updateMain()
     }
 
     private fun sendCategory(category: Category) {
@@ -106,15 +100,13 @@ class ViewModel @Inject constructor (
                     UiState.Error("Ошибка при обновлении, проверьте соединение")
                 }
         }
-        events = Events(
-            sendCategory = ::sendCategory,
-            sendTransaction = ::sendTransaction,
-            onRetry = ::updateMain
-        )
     }
 
-    @JvmName("get_event")
-    fun getEvents() = events
+    fun getEvents() = Events(
+        sendCategory = ::sendCategory,
+        sendTransaction = ::sendTransaction,
+        onRetry = ::updateMain
+    )
 
     @Composable
     fun getState() = uiState.collectAsState().value

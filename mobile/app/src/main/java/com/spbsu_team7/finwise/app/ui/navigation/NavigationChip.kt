@@ -45,12 +45,5 @@ fun NavigationChip(
             tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(vertical = 10.dp)
         )
-//            Spacer(modifier = Modifier.width(6.dp))
-//            Text(
-//                text = label,
-//                style = MaterialTheme.typography.labelLarge,
-//                color = contentColor
-//            )
-
     }
 }

@@ -31,7 +31,7 @@ fun TransactionsScreen(uiState: UiState, events: Events) {
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     AddTransactionSection(uiState.categories, events.sendTransaction)
-                    TransactionsTable(uiState.transactions)
+                    TransactionsTable(uiState)
                 }
             }
             is UiState.Loading -> {
