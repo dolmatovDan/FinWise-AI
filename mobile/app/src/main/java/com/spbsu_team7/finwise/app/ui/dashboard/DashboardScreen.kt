@@ -33,7 +33,7 @@ fun DashboardScreen(
                 ) {
 
                     SummarySection(uiState.status, modifier = Modifier.fillMaxWidth())
-                    ChartsSection()
+                    ChartsSection(uiState.chartsData)
                 }
             }
 

@@ -4,9 +4,6 @@ import android.net.http.HttpException
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.spbsu_team7.finwise.core.model.Advice
@@ -16,7 +13,6 @@ import com.spbsu_team7.finwise.core.model.Transaction
 import com.spbsu_team7.finwise.core.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -28,12 +24,18 @@ data class Events(
     val onRetry: () -> Unit
 )
 
+data class ChartsData (
+    val lastSixMonthTransactions: Pair<List<Int>, List<Int>>,
+    val categoriesExpense: Map<Category, Int>
+)
+
 sealed interface UiState {
     data class Success(
         val transactions: List<Transaction>,
         val status: Status,
         val categories: List<Category>,
-        val advices: List<Advice>
+        val advices: List<Advice>,
+        val chartsData: ChartsData
     ) : UiState
 
     data class Error(
@@ -84,7 +86,11 @@ class ViewModel @Inject constructor (
                         transactions = repository.getTransactions(),
                         status = repository.getStatus(),
                         categories = repository.getCategories(),
-                        advices = repository.getAdvices()
+                        advices = repository.getAdvices(),
+                        chartsData = ChartsData(
+                            repository.getLastMonthsTransaction(6),
+                            repository.getCategoriesExpense()
+                        )
                     )
                 } catch (e: IOException) {
                     Log.e("IO", "${e.message} in updateMain")

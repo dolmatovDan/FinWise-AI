@@ -66,7 +66,7 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.bundles.viewmodel)
     implementation(libs.bundles.vico)
-
+    implementation ("io.github.ehsannarmani:compose-charts:0.2.0")
     implementation(libs.bundles.hilt)
 
     ksp(libs.hilt.compiler)
