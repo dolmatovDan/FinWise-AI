@@ -14,11 +14,13 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.Events
 import com.spbsu_team7.finwise.app.UiState
+import com.spbsu_team7.finwise.app.ViewModel
 import com.spbsu_team7.finwise.app.ui.categories.CategoriesScreen
 import com.spbsu_team7.finwise.app.ui.chatbot.ChatBotScreen
 import com.spbsu_team7.finwise.app.ui.dashboard.DashboardScreen
@@ -26,11 +28,12 @@ import com.spbsu_team7.finwise.app.ui.navigation.NavItem
 import com.spbsu_team7.finwise.app.ui.navigation.NavigationBar
 import com.spbsu_team7.finwise.app.ui.topbar.TopBar
 import com.spbsu_team7.finwise.app.ui.transactions.TransactionsScreen
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun MainScreen(uiState: UiState, events: Events) {
+fun MainScreen(viewModel: ViewModel, events: Events) {
     val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -49,7 +52,7 @@ fun MainScreen(uiState: UiState, events: Events) {
             }
         )
         },
-        topBar = { TopBar(uiState, events) }
+        topBar = { TopBar(viewModel.getState(), events) }
     ) { paddingValues ->
         HorizontalPager(
             state = pagerState,
@@ -58,10 +61,10 @@ fun MainScreen(uiState: UiState, events: Events) {
                 .fillMaxSize()
         ) {page ->
             when (page) {
-                0 -> DashboardScreen(uiState, events)
-                1 -> TransactionsScreen(uiState, events)
-                2 -> CategoriesScreen(uiState, events)
-                3 -> ChatBotScreen(uiState, events)
+                0 -> DashboardScreen(viewModel.getState(), events)
+                1 -> TransactionsScreen(viewModel.getState(), events)
+                2 -> CategoriesScreen(viewModel.getState(), events)
+                3 -> ChatBotScreen(viewModel.getState(), events)
             }
         }
     }

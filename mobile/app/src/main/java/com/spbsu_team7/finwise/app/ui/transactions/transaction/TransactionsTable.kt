@@ -1,5 +1,6 @@
 package com.spbsu_team7.finwise.app.ui.transactions.transaction
 
+import androidx.activity.viewModels
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -18,16 +19,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spbsu_team7.finwise.app.UiState
+import com.spbsu_team7.finwise.app.ViewModel
 import com.spbsu_team7.finwise.core.model.Transaction
 
 import com.spbsu_team7.finwise.app.ui.theme.ExpenseRed
 import com.spbsu_team7.finwise.app.ui.theme.IncomeGreen
+import dagger.hilt.android.AndroidEntryPoint
+import kotlin.getValue
 import kotlin.math.absoluteValue
-
 
 @Composable
 fun TransactionsTable(transactions: List<Transaction>) {
-
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Операции", style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(horizontal = 7.dp))

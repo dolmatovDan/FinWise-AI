@@ -30,7 +30,7 @@ fun TransactionsScreen(uiState: UiState, events: Events) {
                         .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 5.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    AddTransactionSection(uiState.categories)
+                    AddTransactionSection(uiState.categories, events.sendTransaction)
                     TransactionsTable(uiState.transactions)
                 }
             }

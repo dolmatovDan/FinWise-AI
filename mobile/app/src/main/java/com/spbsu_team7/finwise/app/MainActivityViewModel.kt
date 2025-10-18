@@ -19,8 +19,8 @@ import java.io.IOException
 import javax.inject.Inject
 
 data class Events(
-    val sendNewCategory: (Category) -> Unit,
-    val sendNewTransaction: (Transaction) -> Unit,
+    val sendCategory: (Category) -> Unit,
+    val sendTransaction: (Transaction) -> Unit,
     val onRetry: () -> Unit
 )
 
@@ -51,6 +51,11 @@ class ViewModel @Inject constructor (
 ) : ViewModel() {
     private var _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState = _uiState.asStateFlow()
+    var events = Events(
+        sendCategory = ::sendCategory,
+        sendTransaction = ::sendTransaction,
+        onRetry = ::updateMain
+    )
 
     init {
         updateMain()
@@ -60,11 +65,12 @@ class ViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 repository.sendTransaction(transaction)
-                updateMain()
+                Log.d("send", "send")
             } catch (e: Exception) {
                 Log.e("IO", "${e.message} in sendNewTransaction")
             }
         }
+        updateMain()
     }
 
     private fun sendCategory(category: Category) {
@@ -100,14 +106,15 @@ class ViewModel @Inject constructor (
                     UiState.Error("Ошибка при обновлении, проверьте соединение")
                 }
         }
-    }
-
-    fun getEvents() =
-        Events(
-            sendNewCategory = ::sendCategory,
-            sendNewTransaction = ::sendTransaction,
+        events = Events(
+            sendCategory = ::sendCategory,
+            sendTransaction = ::sendTransaction,
             onRetry = ::updateMain
         )
+    }
+
+    @JvmName("get_event")
+    fun getEvents() = events
 
     @Composable
     fun getState() = uiState.collectAsState().value

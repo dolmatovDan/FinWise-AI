@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
 import com.spbsu_team7.finwise.app.ui.MainScreen
 import com.spbsu_team7.finwise.app.ui.theme.FinanceTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -15,7 +16,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: ViewModel by viewModels()
             FinanceTheme {
-                MainScreen(viewModel.getState(), viewModel.getEvents())
+                MainScreen(viewModel, viewModel.getEvents())
             }
         }
     }

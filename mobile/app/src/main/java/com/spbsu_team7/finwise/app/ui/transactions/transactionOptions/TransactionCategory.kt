@@ -55,9 +55,8 @@ import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionCategory(modifier: Modifier, categories: List<Category>) {
+fun TransactionCategory(modifier: Modifier, categories: List<Category>, selectedCategory: Category?, onChange: (Category) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedCategory: Category?  by remember { mutableStateOf(null) }
 
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -129,7 +128,7 @@ fun TransactionCategory(modifier: Modifier, categories: List<Category>) {
                             items(items = categories) { category ->
                                 CategoryRow(category = category,
                                     {
-                                        selectedCategory = category
+                                        onChange(category)
                                         expanded = false
                                     })
                             }
