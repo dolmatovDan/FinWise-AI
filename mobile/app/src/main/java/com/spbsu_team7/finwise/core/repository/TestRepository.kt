@@ -17,29 +17,32 @@ import kotlin.math.absoluteValue
 class TestRepository : Repository {
     val transactionList = mutableListOf(
         Transaction(
+            0,
             "Стипендия",
             Instant.now(),
             20000,
-            Category("Стипендия", Icons.Default.Money, Color(0xFF009e42))
+            Category(0, "Стипендия", Icons.Default.Money, Color(0xFF009e42))
         ),
         Transaction(
+            1,
             "Кафе",
             Instant.now(),
             -359,
-            Category("Питание", Icons.Default.EmojiFoodBeverage, Color(0xFFffc929))
+            Category(1, "Питание", Icons.Default.EmojiFoodBeverage, Color(0xFFffc929))
         ),
         Transaction(
+            2,
             "Пополнение проездного",
             Instant.now(),
             -1100,
-            Category("Транспорт", Icons.Default.Train, Color(0xFF070070))
+            Category(2, "Транспорт", Icons.Default.Train, Color(0xFF070070))
         )
     )
 
     val categoryList = mutableListOf(
-        Category("Стипендия", Icons.Default.Money, Color(0xFF009e42)),
-        Category("Питание", Icons.Default.EmojiFoodBeverage, Color(0xFFffc929)),
-        Category("Пополнение проездного", Icons.Default.Train, Color(0xFF070070)),
+        Category(0, "Стипендия", Icons.Default.Money, Color(0xFF009e42)),
+        Category(1, "Питание", Icons.Default.EmojiFoodBeverage, Color(0xFFffc929)),
+        Category(2, "Пополнение проездного", Icons.Default.Train, Color(0xFF070070)),
     )
 
     val adviceList = mutableListOf(
@@ -62,11 +65,11 @@ class TestRepository : Repository {
     override suspend fun getAdvices(): List<Advice> = adviceList
 
     override suspend fun sendTransaction(transaction: Transaction) {
-        transactionList.add(transaction)
+        transactionList.add(transaction.copy(id = transactionList.size))
     }
 
     override suspend fun sendCategory(category: Category) {
-        categoryList.add(category)
+        categoryList.add(category.copy(id = categoryList.size))
     }
 
     override suspend fun getLastMonthsTransaction(months: Int): Pair<List<Int>, List<Int>> {

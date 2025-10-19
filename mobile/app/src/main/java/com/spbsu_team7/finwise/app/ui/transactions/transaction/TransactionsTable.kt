@@ -24,7 +24,6 @@ import com.spbsu_team7.finwise.core.model.Transaction
 
 import com.spbsu_team7.finwise.app.ui.theme.ExpenseRed
 import com.spbsu_team7.finwise.app.ui.theme.IncomeGreen
-import dagger.hilt.android.AndroidEntryPoint
 import kotlin.getValue
 import kotlin.math.absoluteValue
 
@@ -37,7 +36,9 @@ fun TransactionsTable(uiState: UiState.Success) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(items = uiState.transactions) { ts ->
+            items(items = uiState.transactions,
+                key = { it.id }
+            ) { ts ->
                 TransactionRow(transaction = ts)
             }
         }

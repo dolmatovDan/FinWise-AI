@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.Events
 import com.spbsu_team7.finwise.app.UiState
+import com.spbsu_team7.finwise.app.ui.categories.category.AddCategorySection
 import com.spbsu_team7.finwise.app.ui.special.ErrorScreen
 import com.spbsu_team7.finwise.app.ui.special.LoadingScreen
 
@@ -34,7 +35,7 @@ fun CategoriesScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-
+                    AddCategorySection()
                 }
             }
             is UiState.Loading -> {

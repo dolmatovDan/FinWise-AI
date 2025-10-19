@@ -18,23 +18,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun TipsSection() {
-    Surface(
-        modifier = Modifier.fillMaxWidth().border(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline,
-            shape = MaterialTheme.shapes.medium
-        ),
-        shape = MaterialTheme.shapes.medium,
-        contentColor = MaterialTheme.colorScheme.onSurface
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("AI рекомендации", style = MaterialTheme.typography.titleLarge)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(value = "Как мне больше сэкономить?", onValueChange = {}, modifier = Modifier.fillMaxWidth(), label = { Text("Спросить") })
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().height(30.dp)) {
+            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("AI рекомендации", style = MaterialTheme.typography.titleLarge)
         }
-    }
 }

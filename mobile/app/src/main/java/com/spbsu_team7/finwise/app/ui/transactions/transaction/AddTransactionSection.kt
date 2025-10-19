@@ -12,7 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TextWithOption
+import com.spbsu_team7.finwise.app.ui.util.TextWithOption
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionCategory
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionDate
 import com.spbsu_team7.finwise.core.model.Category
@@ -70,6 +70,7 @@ fun AddTransactionSection(
                         if (!sum.isEmpty() && !description.isEmpty() && selectedCategory != null && datePickerState.selectedDateMillis != null)
                             sendTransaction(
                                 Transaction(
+                                    0,
                                     description,
                                     Instant.ofEpochMilli(datePickerState.selectedDateMillis!!),
                                     amount = sum.toInt(),
