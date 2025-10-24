@@ -20,11 +20,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.ui.categories.categoryOptions.CategoryColors
+import com.spbsu_team7.finwise.app.ui.categories.categoryOptions.CategoryIcons
 import com.spbsu_team7.finwise.app.ui.util.TextWithOption
+import com.spbsu_team7.finwise.core.model.Category
+import com.spbsu_team7.finwise.core.model.CategoryToSend
+import com.spbsu_team7.finwise.core.model.TransactionToSend
+import com.spbsu_team7.finwise.core.model.UserColor
+import com.spbsu_team7.finwise.core.model.UserIcon
+import java.time.Instant
 
 @Composable
-fun AddCategorySection() {
+fun AddCategorySection(
+    colors: List<UserColor>,
+    icons: List<UserIcon>,
+    sendCategory: (CategoryToSend) -> Unit
+) {
     var name by remember { mutableStateOf("") }
+    var selectedColor: UserColor?  by remember { mutableStateOf(null) }
+    var selectedIcon: UserIcon?  by remember { mutableStateOf(null) }
 
         Surface(
             modifier = Modifier
@@ -47,8 +60,14 @@ fun AddCategorySection() {
                 )
 
                 TextWithOption(name = "Название", modifier = Modifier.height(55.dp), value = name, "Название категории", valueChange = { name = it })
-                CategoryColors()
-                AddCategoryButton(Modifier.fillMaxWidth().height(30.dp)) { }
+                CategoryColors(colors = colors, selectedColor = selectedColor, onClick = { selectedColor = it })
+                CategoryIcons(icons = icons, selectedIcon = selectedIcon, onClick = { selectedIcon = it })
+                AddCategoryButton(Modifier.fillMaxWidth().height(30.dp)) {
+                    if (!name.isEmpty() && selectedColor != null && selectedIcon != null)
+                        sendCategory(
+                            CategoryToSend(0, name, selectedIcon!!.id, selectedColor!!.id)
+                        )
+                }
             }
         }
 

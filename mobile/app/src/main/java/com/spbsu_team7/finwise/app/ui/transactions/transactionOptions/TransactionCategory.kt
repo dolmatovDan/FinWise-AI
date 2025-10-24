@@ -1,5 +1,6 @@
 package com.spbsu_team7.finwise.app.ui.transactions.transactionOptions
 
+import android.media.Image
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.ui.MainScreen
 import com.spbsu_team7.finwise.app.ui.transactions.transaction.TransactionRow
 import com.spbsu_team7.finwise.core.model.Category
+import com.spbsu_team7.finwise.core.model.UserIcon
 import java.nio.file.WatchEvent
 import java.time.Instant
 
@@ -92,9 +95,9 @@ fun TransactionCategory(modifier: Modifier, categories: List<Category>, selected
                         }
                         if (selectedCategory != null) {
                             Icon (
-                                imageVector = selectedCategory!!.icon,
-                                contentDescription = selectedCategory!!.name,
-                                tint = selectedCategory!!.color,
+                                imageVector = selectedCategory.icon,
+                                contentDescription = selectedCategory.name,
+                                tint = selectedCategory.color,
                                 modifier = Modifier.padding(vertical = 7.dp)
                             )
                         }
@@ -106,7 +109,7 @@ fun TransactionCategory(modifier: Modifier, categories: List<Category>, selected
                             )
                         } else (
                                 Text(
-                                    text = selectedCategory!!.name,
+                                    text = selectedCategory.name,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                                 )

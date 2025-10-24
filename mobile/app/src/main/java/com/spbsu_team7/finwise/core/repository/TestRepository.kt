@@ -2,54 +2,75 @@ package com.spbsu_team7.finwise.core.repository
 
 import android.util.Log
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AirlineSeatIndividualSuite
+import androidx.compose.material.icons.filled.Dining
 import androidx.compose.material.icons.filled.EmojiFoodBeverage
+import androidx.compose.material.icons.filled.LocalMovies
 import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.ShoppingBasket
+import androidx.compose.material.icons.filled.StackedBarChart
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Train
+import androidx.compose.material.icons.filled.VideogameAsset
 import androidx.compose.ui.graphics.Color
 import com.spbsu_team7.finwise.core.model.Advice
 import com.spbsu_team7.finwise.core.model.Category
+import com.spbsu_team7.finwise.core.model.CategoryToSend
 import com.spbsu_team7.finwise.core.model.Transaction
 import java.time.Instant
 import com.spbsu_team7.finwise.core.model.Status
+import com.spbsu_team7.finwise.core.model.TransactionToSend
+import com.spbsu_team7.finwise.core.model.UserColor
+import com.spbsu_team7.finwise.core.model.UserIcon
 import java.time.ZoneId
 import kotlin.math.absoluteValue
 
 class TestRepository : Repository {
+
+    val categoryList = mutableListOf(
+        CategoryToSend(0, "Стипендия", 3, 0),
+        CategoryToSend(1, "Питание", 2, 3),
+        CategoryToSend(2, "Пополнение проездного", 1, 8),
+    )
+
     val transactionList = mutableListOf(
-        Transaction(
+        TransactionToSend(
             0,
             "Стипендия",
             Instant.now(),
             20000,
-            Category(0, "Стипендия", Icons.Default.Money, Color(0xFF009e42))
+            0
         ),
-        Transaction(
+        TransactionToSend(
             1,
             "Кафе",
             Instant.now(),
             -359,
-            Category(1, "Питание", Icons.Default.EmojiFoodBeverage, Color(0xFFffc929))
+            1
         ),
-        Transaction(
+        TransactionToSend(
             2,
             "Пополнение проездного",
             Instant.now(),
             -1100,
-            Category(2, "Транспорт", Icons.Default.Train, Color(0xFF070070))
+            2
         )
-    )
-
-    val categoryList = mutableListOf(
-        Category(0, "Стипендия", Icons.Default.Money, Color(0xFF009e42)),
-        Category(1, "Питание", Icons.Default.EmojiFoodBeverage, Color(0xFFffc929)),
-        Category(2, "Пополнение проездного", Icons.Default.Train, Color(0xFF070070)),
     )
 
     val adviceList = mutableListOf(
         Advice("Меньше надо есть!")
     )
 
-    override suspend fun getTransactions(): List<Transaction> = transactionList
+    override suspend fun getTransactions(): List<Transaction> {
+        val categories = getCategories()
+        return transactionList.map { tr -> Transaction(
+            id = tr.id,
+            name = tr.name,
+            date = tr.date,
+            amount = tr.amount,
+            category = categories.get(tr.categoryId)
+        ) }
+    }
 
 
     override suspend fun getStatus(): Status =
@@ -60,15 +81,28 @@ class TestRepository : Repository {
         )
 
 
-    override suspend fun getCategories(): List<Category> = categoryList
+    override suspend fun getCategories(): List<Category> {
+        val icons = getIcons()
+        val colors = getColors()
+        return categoryList.map { cat -> Category(
+            id = cat.id,
+            name = cat.name,
+            icon = icons.get(cat.iconId).imageVector,
+            color = colors.get(cat.colorId).color
+        ) }
+    }
 
     override suspend fun getAdvices(): List<Advice> = adviceList
 
-    override suspend fun sendTransaction(transaction: Transaction) {
+    override suspend fun getIcons(): List<UserIcon> = CollectIcons()
+
+    override suspend fun getColors(): List<UserColor> = CollectColors()
+
+    override suspend fun sendTransaction(transaction: TransactionToSend) {
         transactionList.add(transaction.copy(id = transactionList.size))
     }
 
-    override suspend fun sendCategory(category: Category) {
+    override suspend fun sendCategory(category: CategoryToSend) {
         categoryList.add(category.copy(id = categoryList.size))
     }
 
@@ -99,5 +133,31 @@ class TestRepository : Repository {
         }.mapValues { it.value.sumOf { -it.amount } }
     }
 }
+
+fun CollectIcons() = listOf(
+    UserIcon(0, Icons.Default.VideogameAsset),
+    UserIcon(1, Icons.Default.Train),
+    UserIcon(2, Icons.Default.Dining),
+    UserIcon(3, Icons.Default.Money),
+    UserIcon(4, Icons.Default.LocalMovies),
+    UserIcon(5, Icons.Default.StackedBarChart),
+    UserIcon(6, Icons.Default.Star),
+    UserIcon(7, Icons.Default.ShoppingBasket),
+    UserIcon(8, Icons.Default.AirlineSeatIndividualSuite)
+)
+
+fun CollectColors() = listOf(
+    UserColor(0, Color(0xFF4CAF50)),
+    UserColor(1, Color(0xFF03A9F4)),
+    UserColor(2, Color(0xFF9C27B0)),
+    UserColor(3, Color(0xFFFF9800)),
+    UserColor(4, Color(0xFFF44336)),
+    UserColor(5, Color(0xFFE91E63)),
+    UserColor(6, Color(0xFF009688)),
+    UserColor(7, Color(0xFF3F51B5)),
+    UserColor(8, Color(0xFF673AB7)),
+    UserColor(9, Color(0xFFCE67D5))
+)
+
 
 

@@ -11,18 +11,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.ui.util.TextWithOption
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionCategory
 import com.spbsu_team7.finwise.app.ui.transactions.transactionOptions.TransactionDate
 import com.spbsu_team7.finwise.core.model.Category
 import com.spbsu_team7.finwise.core.model.Transaction
+import com.spbsu_team7.finwise.core.model.TransactionToSend
+import com.spbsu_team7.finwise.core.model.UserIcon
 import java.time.Instant
 
 @Composable
 fun AddTransactionSection(
     categories: List<Category>,
-    sendTransaction: (Transaction) -> Unit
+    sendTransaction: (TransactionToSend) -> Unit
 ) {
     var sum by remember { mutableStateOf("") }
     val datePickerState = rememberDatePickerState()
@@ -69,12 +72,12 @@ fun AddTransactionSection(
                     {
                         if (!sum.isEmpty() && !description.isEmpty() && selectedCategory != null && datePickerState.selectedDateMillis != null)
                             sendTransaction(
-                                Transaction(
+                                TransactionToSend(
                                     0,
                                     description,
                                     Instant.ofEpochMilli(datePickerState.selectedDateMillis!!),
                                     amount = sum.toInt(),
-                                    category = selectedCategory!!
+                                    categoryId = selectedCategory!!.id
                                 )
                             )
                     }

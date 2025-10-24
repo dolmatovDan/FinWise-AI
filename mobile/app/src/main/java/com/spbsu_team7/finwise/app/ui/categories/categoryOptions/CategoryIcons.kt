@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,15 +28,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.ui.MainScreen
 import com.spbsu_team7.finwise.core.model.UserColor
+import com.spbsu_team7.finwise.core.model.UserIcon
 
 @Composable
-fun CategoryColors(colors: List<UserColor>, selectedColor: UserColor?, onClick: (UserColor) -> Unit) {
+fun CategoryIcons(icons: List<UserIcon>, selectedIcon: UserIcon?, onClick: (UserIcon) -> Unit) {
     Column(
-        modifier = Modifier.height(50.dp).fillMaxWidth(),
+        modifier = Modifier.height(70.dp).fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Text(
-            text = "Цвет",
+            text = "Иконка",
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(horizontal = 0.dp)
         )
@@ -44,8 +46,8 @@ fun CategoryColors(colors: List<UserColor>, selectedColor: UserColor?, onClick: 
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            colors.forEach {
-                var modifier = if (selectedColor == it) Modifier.border(
+            icons.forEach {
+                var modifier = if (selectedIcon == it) Modifier.border(
                     border = BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.onSurface),
                     shape = RoundedCornerShape(11.dp)
                 ) else Modifier
@@ -53,15 +55,14 @@ fun CategoryColors(colors: List<UserColor>, selectedColor: UserColor?, onClick: 
                     modifier = modifier.aspectRatio(1f).weight(1f).padding(3.dp),
                     shape = MaterialTheme.shapes.small
                 ) {
-                    Surface(
+                    Icon (
+                        imageVector = it.imageVector,
+                        contentDescription = it.id.toString(),
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.clickable(
                             onClick = { onClick(it) }
-                        ),
-                        color = it.color,
-                        shape = MaterialTheme.shapes.small
-                    ) {
-
-                    }
+                        )
+                    )
                 }
             }
         }

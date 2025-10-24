@@ -4,12 +4,18 @@ import android.net.http.HttpException
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.spbsu_team7.finwise.core.model.Advice
 import com.spbsu_team7.finwise.core.model.Category
+import com.spbsu_team7.finwise.core.model.CategoryToSend
+import com.spbsu_team7.finwise.core.model.ChartsData
 import com.spbsu_team7.finwise.core.model.Status
 import com.spbsu_team7.finwise.core.model.Transaction
+import com.spbsu_team7.finwise.core.model.TransactionToSend
+import com.spbsu_team7.finwise.core.model.UserColor
+import com.spbsu_team7.finwise.core.model.UserIcon
 import com.spbsu_team7.finwise.core.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,15 +25,11 @@ import java.io.IOException
 import javax.inject.Inject
 
 data class Events(
-    val sendCategory: (Category) -> Unit,
-    val sendTransaction: (Transaction) -> Unit,
+    val sendCategory: (CategoryToSend) -> Unit,
+    val sendTransaction: (TransactionToSend) -> Unit,
     val onRetry: () -> Unit
 )
 
-data class ChartsData (
-    val lastSixMonthTransactions: Pair<List<Int>, List<Int>>,
-    val categoriesExpense: Map<Category, Int>
-)
 
 sealed interface UiState {
     data class Success(
@@ -35,7 +37,9 @@ sealed interface UiState {
         val status: Status,
         val categories: List<Category>,
         val advices: List<Advice>,
-        val chartsData: ChartsData
+        val chartsData: ChartsData,
+        val icons: List<UserIcon>,
+        val colors: List<UserColor>
     ) : UiState
 
     data class Error(
@@ -56,7 +60,7 @@ class ViewModel @Inject constructor (
         updateMain()
     }
 
-    private fun sendTransaction(transaction: Transaction) {
+    private fun sendTransaction(transaction: TransactionToSend) {
         viewModelScope.launch {
             try {
                 repository.sendTransaction(transaction)
@@ -67,7 +71,7 @@ class ViewModel @Inject constructor (
         }
     }
 
-    private fun sendCategory(category: Category) {
+    private fun sendCategory(category: CategoryToSend) {
         viewModelScope.launch {
             try {
                 repository.sendCategory(category)
@@ -90,7 +94,9 @@ class ViewModel @Inject constructor (
                         chartsData = ChartsData(
                             repository.getLastMonthsTransaction(6),
                             repository.getCategoriesExpense()
-                        )
+                        ),
+                        icons = repository.getIcons(),
+                        colors = repository.getColors()
                     )
                 } catch (e: IOException) {
                     Log.e("IO", "${e.message} in updateMain")

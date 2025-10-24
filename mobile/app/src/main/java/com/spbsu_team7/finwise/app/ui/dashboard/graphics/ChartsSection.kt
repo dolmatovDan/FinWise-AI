@@ -16,9 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
-import com.spbsu_team7.finwise.app.ChartsData
+
 
 import com.spbsu_team7.finwise.core.model.Category
+import com.spbsu_team7.finwise.core.model.ChartsData
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.PieChart
 import ir.ehsannarmani.compose_charts.models.Line
@@ -28,7 +29,6 @@ import ir.ehsannarmani.compose_charts.models.Pie
 fun ChartsSection(chartsData: ChartsData) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-        // 1 PIE CHART
         Surface(
             modifier = Modifier.fillMaxWidth().border(
                 width = 1.dp,
@@ -46,7 +46,6 @@ fun ChartsSection(chartsData: ChartsData) {
             }
         }
 
-        // 2 LINE CHART
         Surface(
             modifier = Modifier.fillMaxWidth().border(
                 width = 1.dp,
