@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Dining
 import androidx.compose.material.icons.filled.EmojiFoodBeverage
 import androidx.compose.material.icons.filled.LocalMovies
 import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.ShoppingBasket
 import androidx.compose.material.icons.filled.StackedBarChart
 import androidx.compose.material.icons.filled.Star
@@ -58,7 +59,13 @@ class TestRepository : Repository {
     )
 
     val adviceList = mutableListOf(
-        Advice("Меньше надо есть!")
+        Advice(
+            name = "Оптимизация расходов на продукты",
+            description = "За последний месяц траты на продукты выросли на 23%. Ограничьте свои траты в этой категории",
+            economy = 2500,
+            priority = 2,
+            icon = Icons.Default.Savings
+            )
     )
 
     override suspend fun getTransactions(): List<Transaction> {

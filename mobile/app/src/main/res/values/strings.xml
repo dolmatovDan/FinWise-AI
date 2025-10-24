@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">FinWise</string>
+    <string name="high_priority">высокий приоритет</string>
+    <string name="medium_priority">средний приоритет</string>
+    <string name="small_priority">низкий приоритет</string>
 </resources>

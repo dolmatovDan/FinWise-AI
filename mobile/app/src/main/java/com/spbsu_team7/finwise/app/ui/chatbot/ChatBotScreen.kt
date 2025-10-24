@@ -30,11 +30,10 @@ fun ChatBotScreen(
             is UiState.Success -> {
                 Column(
                     modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 5.dp)
-                        .verticalScroll(rememberScrollState()),
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 5.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    TipsSection()
+                    TipsSection(uiState)
                 }
             }
             is UiState.Loading -> {
