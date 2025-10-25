@@ -5,7 +5,11 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.UiState
 import com.spbsu_team7.finwise.app.ui.theme.ExpenseRed
@@ -42,11 +49,11 @@ fun ChartsSection(uiState: UiState.Success) {
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
                 shape = MaterialTheme.shapes.medium
-            ),
+            ).weight(0.4f),
             shape = MaterialTheme.shapes.medium,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
-            Column(modifier = Modifier.padding(16.dp).fillMaxHeight(fraction = 0.4f)) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 Text("Расходы по категориям", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(12.dp))
                 val transactions = uiState.chartsData.lastSixMonthTransactions
@@ -59,16 +66,24 @@ fun ChartsSection(uiState: UiState.Success) {
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
                 shape = MaterialTheme.shapes.medium
-            ),
+            ).weight(0.6f),
             shape = MaterialTheme.shapes.medium,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Доход и расход по дням", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(12.dp))
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                Text(
+                    "Доход и расход по дням",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(0.1f)
+                )
 //                val transactions = uiState.chartsData.lastSixMonthTransactions
 //                IncomeExpenseLineChart(transactions.first,
 //                    transactions.second)
+                var selectedFilter by remember { mutableStateOf(FilterType.Month) }
+
                 val transactions = uiState.transactions.sortedBy { it.date.toEpochMilli() }
                 val incomeByDay = transactions.filter { it.amount >= 0 }.associate {
                     it.date.atZone(ZoneId.systemDefault()).dayOfMonth to it.amount
@@ -78,16 +93,75 @@ fun ChartsSection(uiState: UiState.Success) {
                     it.date.atZone(ZoneId.systemDefault()).dayOfMonth to -it.amount
                 }
                 val expenseData = List(31) { expenseByDay.getOrDefault(it, 0) }
-                IncomeExpenseLineChart(incomeData.runningReduce { acc, value -> acc + value },
-                    expenseData.runningReduce { acc, value -> acc + value })
+                IncomeExpenseLineChart(
+                    Modifier.weight(0.8f),
+                    incomeData.runningReduce { acc, value -> acc + value },
+                    expenseData.runningReduce { acc, value -> acc + value }
+                )
+                Filters(
+                    modifier = Modifier.weight(0.1f),
+                    onChange = { selectedFilter = it },
+                    selectedFilter = selectedFilter
+                )
             }
         }
     }
 }
 
 @Composable
-fun IncomeExpenseLineChart(incomeData: List<Int>, expenseData: List<Int>) {
+fun Filters(
+    modifier: Modifier,
+    onChange: (FilterType) -> Unit,
+    selectedFilter: FilterType
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        FilterType.entries.forEach {
+                type ->
+            val color = if (selectedFilter == type) MaterialTheme.colorScheme.surface
+            else MaterialTheme.colorScheme.secondaryContainer
+            Surface(
+                modifier = Modifier.fillMaxSize().weight(1f).border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = MaterialTheme.shapes.medium
+                )
+                    .padding(0.dp)
+                    .clickable(
+                        onClick = { onChange(type) },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ),
+                color = color,
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = type.text,
+                        maxLines = 1,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun IncomeExpenseLineChart(
+    modifier: Modifier,
+    incomeData: List<Int>,
+    expenseData: List<Int>
+) {
     LineChart(
+        modifier = modifier,
         data = remember {
             listOf(
                 Line(
@@ -172,4 +246,10 @@ fun IncomeExpensePieChart(categoriesIncome: Map<Category, Int>) {
         }
     }
 
+}
+
+enum class FilterType(val text: String) {
+    Month("за месяц"),
+    Month3("за 3 месяца"),
+    Year("за год")
 }
