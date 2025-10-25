@@ -36,7 +36,7 @@ fun TransactionsTable(uiState: UiState.Success) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(items = uiState.transactions,
+            items(items = uiState.transactions.sortedByDescending { it.date.toEpochMilli() },
                 key = { it.id }
             ) { ts ->
                 TransactionRow(transaction = ts)

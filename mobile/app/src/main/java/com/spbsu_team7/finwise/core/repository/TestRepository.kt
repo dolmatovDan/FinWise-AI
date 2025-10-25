@@ -23,7 +23,9 @@ import com.spbsu_team7.finwise.core.model.Status
 import com.spbsu_team7.finwise.core.model.TransactionToSend
 import com.spbsu_team7.finwise.core.model.UserColor
 import com.spbsu_team7.finwise.core.model.UserIcon
+import java.time.LocalDateTime
 import java.time.ZoneId
+import java.util.Date
 import kotlin.math.absoluteValue
 
 class TestRepository : Repository {
@@ -32,30 +34,52 @@ class TestRepository : Repository {
         CategoryToSend(0, "Стипендия", 3, 0),
         CategoryToSend(1, "Питание", 2, 3),
         CategoryToSend(2, "Пополнение проездного", 1, 8),
+        CategoryToSend(3, "Продукты", 7, 6),
     )
 
     val transactionList = mutableListOf(
         TransactionToSend(
             0,
             "Стипендия",
-            Instant.now(),
+            Instant.parse("2025-10-02T10:00:00.000Z"),
             20000,
             0
         ),
         TransactionToSend(
             1,
             "Кафе",
-            Instant.now(),
+            Instant.parse("2025-10-20T10:00:00.000Z"),
             -359,
             1
         ),
         TransactionToSend(
             2,
+            "Кафе",
+            Instant.parse("2025-10-18T10:00:00.000Z"),
+            -330,
+            1
+        ),
+        TransactionToSend(
+            3,
+            "Кафе",
+            Instant.parse("2025-10-15T10:00:00.000Z"),
+            -305,
+            1
+        ),
+        TransactionToSend(
+            4,
             "Пополнение проездного",
-            Instant.now(),
+            Instant.parse("2025-10-05T10:00:00.000Z"),
             -1100,
             2
-        )
+        ),
+        TransactionToSend(
+            5,
+            "Магазин",
+            Instant.parse("2025-10-20T10:00:00.000Z"),
+            -2000,
+            3
+        ),
     )
 
     val adviceList = mutableListOf(
@@ -65,7 +89,14 @@ class TestRepository : Repository {
             economy = 2500,
             priority = 2,
             icon = Icons.Default.Savings
-            )
+            ),
+        Advice(
+            name = "Слишком часто питаешься вне дома",
+            description = "За последний месяц траты на питание выросли на 10%. Ограничьте свои траты в этой категории",
+            economy = 3000,
+            priority = 1,
+            icon = Icons.Default.Savings
+        )
     )
 
     override suspend fun getTransactions(): List<Transaction> {

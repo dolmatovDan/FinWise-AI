@@ -58,7 +58,7 @@ fun AddTransactionSection(
                         value = sum,
                         placeholder = "0",
                         valueChange = { text ->
-                            val filteredText = text.filter { it.isDigit() }
+                            val filteredText = text.filter { it.isDigit() || it == '-'}
                             sum = filteredText
                         }
                     )
