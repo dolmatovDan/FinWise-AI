@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/models"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/google/uuid"
     "github.com/stretchr/testify/mock"
 )

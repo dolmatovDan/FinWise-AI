@@ -39,11 +39,11 @@ services:
     networks:
       - finwise-network
 
-  # Backend API Service
-  backend:
+  # Transactions & DB API Service
+  transactions:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: transactions/Dockerfile
     container_name: finwise-backend
     restart: unless-stopped
     depends_on:
@@ -65,6 +65,28 @@ services:
       LOG_FORMAT: ${LOG_FORMAT:-json}
     ports:
       - "${SERVER_PORT:-8080}:8080"
+    networks:
+      - finwise-network
+  
+  # ML API Service
+  ml-api:
+    build:
+      context: ./backend
+      dockerfile: ml-api/Dockerfile
+    container_name: finwise-ml-api
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      # Server config
+      SERVER_HOST: ${SERVER_HOST:-0.0.0.0}
+      SERVER_PORT: ${SERVER_PORT:-8081}
+      # Logger config
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "${SERVER_PORT:-8081}:8081"
     networks:
       - finwise-network
 

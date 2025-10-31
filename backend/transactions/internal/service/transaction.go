@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/models"
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/storage"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/storage"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )

@@ -1,4 +1,4 @@
-package main
+package transactions
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/config"
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/handlers"
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/service"
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/storage/postgres"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/config"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/handlers"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/service"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/storage/postgres"
 )
 
 func main() {

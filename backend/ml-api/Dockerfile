@@ -20,7 +20,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s" \
     -o /build/app \
-    ./cmd/app/main.go
+    ./ml-api/cmd/app/main.go
 
 # Final stage
 FROM alpine:latest
@@ -38,9 +38,6 @@ WORKDIR /app
 # Copy binary from builder
 COPY --from=builder /build/app .
 
-# Copy migrations
-COPY --from=builder /build/migrations ./migrations
-
 # Change ownership
 RUN chown -R appuser:appuser /app
 
@@ -48,7 +45,7 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8081
 
 # Run the application
 CMD ["./app"]
