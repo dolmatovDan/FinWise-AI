@@ -49,6 +49,7 @@ func (h *MlApiHandler) Forecast(c *gin.Context) {
 			Error:   "Invalid request body",
 			Details: parseValidationErrors(err),
 		})
+		return
 	}
 
 	resp, err := h.service.Forecast(c.Request.Context(), &req)
@@ -86,6 +87,7 @@ func (h *MlApiHandler) Advice(c *gin.Context) {
 			Error:   "Invalid request body",
 			Details: parseValidationErrors(err),
 		})
+		return
 	}
 
 	resp, err := h.service.Advice(c.Request.Context(), &req)

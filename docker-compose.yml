@@ -30,7 +30,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./backend/migrations:/migrations
+      - ./backend/transactions/migrations:/migrations
     command: [
       "-path", "/migrations",
       "-database", "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-finwise}?sslmode=disable",
@@ -44,7 +44,7 @@ services:
     build:
       context: ./backend
       dockerfile: transactions/Dockerfile
-    container_name: finwise-backend
+    container_name: finwise-transactions
     restart: unless-stopped
     depends_on:
       migrate:

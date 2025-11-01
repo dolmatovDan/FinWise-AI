@@ -36,6 +36,13 @@ func (s *MlApiService) Forecast(ctx context.Context, req *models.ForecastRequest
 		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
 	}
 
+	for _, tr := range req.Transactions {
+		if err := s.validator.Struct(tr); err != nil {
+			s.logger.Warn("service: validation failed", "error", err)
+			return nil, fmt.Errorf("%w: %w", ErrValidation, err)
+		}
+	}
+
 	out, err := s.launcher.RunForecastModel(req)
 	if err != nil {
 		s.logger.Error("service: forecast request processing failed", "error", err)
@@ -53,6 +60,13 @@ func (s *MlApiService) Advice(ctx context.Context, req *models.AdviceRequest) (*
 	if err := s.validator.Struct(req); err != nil {
 		s.logger.Warn("service: validation failed", "error", err)
 		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
+	}
+
+	for _, tr := range req.Transactions {
+		if err := s.validator.Struct(tr); err != nil {
+			s.logger.Warn("service: validation failed", "error", err)
+			return nil, fmt.Errorf("%w: %w", ErrValidation, err)
+		}
 	}
 
 	out, err := s.launcher.RunAdviceModel(req)

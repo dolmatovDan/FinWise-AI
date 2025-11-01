@@ -19,9 +19,9 @@ func SetupRouter(mlApiService *service.MlApiService, logger *slog.Logger) *gin.E
 	// API v1 routes
 	v1 := router.Group("/api/v1")
 	{
-		// Transaction routes
+		// ML API routes
 		mlApiHandler := NewMlApiHandler(mlApiService, logger)
-		mlApi := v1.Group("/transactions")
+		mlApi := v1.Group("/ml-api")
 		{
 			mlApi.POST("/forecast", mlApiHandler.Forecast)
 			mlApi.POST("/advice", mlApiHandler.Advice)

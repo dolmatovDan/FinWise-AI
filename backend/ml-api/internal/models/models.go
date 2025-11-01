@@ -7,8 +7,8 @@ import (
 )
 
 type Transaction struct {
-	Date        time.Time       `json:"date"`
-	Amount      decimal.Decimal `json:"amount"`
+	Date        time.Time       `json:"date" validate:"required"`
+	Amount      decimal.Decimal `json:"amount" validate:"required"`
 	Type        string          `json:"type" validate:"required,oneof=income expense"`
 	Category    string          `json:"category"`
 	Description string          `json:"description" validate:"omitempty,max=500"`
@@ -19,7 +19,7 @@ type ForecastRequest struct {
 	Granularity  string        `json:"granularity" validate:"required,oneof=month year"`
 	Steps        int64         `json:"steps" validate:"required,gt=0"`
 	Model        string        `json:"model"` // TODO: model possible values
-	Transactions []Transaction `json:"transactions" validate:"required"`
+	Transactions []Transaction `json:"transactions" validate:"required,min=1"`
 }
 
 type ForecastResponse struct {

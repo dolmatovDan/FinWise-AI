@@ -121,6 +121,7 @@ def _to_bullets(text: str) -> str:
 
 def main():
     req = read_json_stdin()
+
     tx = req.get("transactions") or []
     question = (req.get("question") or "").strip()
     

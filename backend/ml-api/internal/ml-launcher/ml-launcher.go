@@ -19,12 +19,17 @@ type PythonMlLauncher struct {
 	AdviceScriptName   string
 }
 
+// TODO: раскомментить, когда юзабельные модели будут готовы, пока заглушка
+/*
 func DefaultMlLauncher() MlLauncher {
 	return &PythonMlLauncher{
-		Dir:                "ml",
+		Dir:                "python",
 		ForecastScriptName: "forecast.py",
 		AdviceScriptName:   "advice.py",
 	}
+}*/
+func DefaultMlLauncher() MlLauncher {
+	return &StubMlLauncher{}
 }
 
 func (l *PythonMlLauncher) RunForecastModel(req *models.ForecastRequest) (*models.ForecastResponse, error) {
@@ -38,7 +43,8 @@ func (l *PythonMlLauncher) RunForecastModel(req *models.ForecastRequest) (*model
 	if err != nil {
 		return nil, err
 	}
-	io.WriteString(stdin, string(reqJson))
+	io.Writer.Write(stdin, reqJson)
+	stdin.Close()
 
 	outputJson, err := cmd.Output()
 	if err != nil {
@@ -64,7 +70,8 @@ func (l *PythonMlLauncher) RunAdviceModel(req *models.AdviceRequest) (*models.Ad
 	if err != nil {
 		return nil, err
 	}
-	io.WriteString(stdin, string(reqJson))
+	io.Writer.Write(stdin, reqJson)
+	stdin.Close()
 
 	outputJson, err := cmd.Output()
 	if err != nil {

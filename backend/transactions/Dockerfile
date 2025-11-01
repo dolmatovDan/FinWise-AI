@@ -37,6 +37,7 @@ WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /build/app .
+RUN chmod +x app
 
 # Copy migrations
 COPY --from=builder /build/transactions/migrations ./migrations
