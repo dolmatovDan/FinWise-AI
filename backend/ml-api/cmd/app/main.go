@@ -8,10 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/config"
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/handlers"
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/service"
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/storage/postgres"
+	"github.com/dolmatovDan/FinWise-AI/backend/ml-api/internal/config"
+	"github.com/dolmatovDan/FinWise-AI/backend/ml-api/internal/handlers"
+	"github.com/dolmatovDan/FinWise-AI/backend/ml-api/internal/service"
 )
 
 func main() {
@@ -26,23 +25,11 @@ func main() {
 	logger := cfg.Logger.NewLogger()
 	logger.Info("starting application", "version", "1.0.0")
 
-	// Connect to database
-	ctx := context.Background()
-	storage, err := postgres.New(ctx, cfg.Database.DSN(), logger)
-	if err != nil {
-		logger.Error("failed to connect to database", "error", err)
-		os.Exit(1)
-	}
-	defer storage.Close()
-
-	// Initialize repositories
-	transactionRepo := postgres.NewTransactionStorage(storage)
+	// Initialize services
+	mlApiService := service.NewMlApiService(logger)
 
 	// Initialize services
-	transactionService := service.NewTransactionService(transactionRepo, logger)
-
-	// Setup HTTP router
-	router := handlers.SetupRouter(transactionService, logger)
+	router := handlers.SetupRouter(mlApiService, logger)
 
 	// Create HTTP server
 	server := &http.Server{

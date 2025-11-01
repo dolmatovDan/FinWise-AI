@@ -3,7 +3,7 @@ package handlers
 import (
 	"log/slog"
 
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/service"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/service"
 	"github.com/gin-gonic/gin"
 )
 

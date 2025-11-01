@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/models"
-	"github.com/dolmatovDan/FinWise-AI/backend/internal/service"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
