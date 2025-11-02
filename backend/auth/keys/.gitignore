@@ -1,0 +1,6 @@
+# Ignore private keys
+private.pem
+
+# Keep public keys and examples
+!public.pem
+!*.example.pem

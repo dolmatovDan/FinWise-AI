@@ -14,7 +14,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy source code
-COPY . .
+COPY transactions/ ./transactions/
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
@@ -41,6 +41,9 @@ RUN chmod +x app
 
 # Copy migrations
 COPY --from=builder /build/transactions/migrations ./migrations
+
+# Copy JWT public key
+COPY --from=builder /build/transactions/keys ./keys
 
 # Change ownership
 RUN chown -R appuser:appuser /app

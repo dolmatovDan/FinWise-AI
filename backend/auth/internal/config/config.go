@@ -32,18 +32,21 @@ type DatabaseConfig struct {
 	User     string
 	Password string
 	Name     string
-	SSLMode  string // disable (local), require/verify-full (production)
+	SSLMode  string
 }
 
 // JWTConfig represents JWT configuration
 type JWTConfig struct {
-	PublicKeyPath string
+	PrivateKeyPath  string
+	PublicKeyPath   string
+	AccessTokenTTL  time.Duration
+	RefreshTokenTTL time.Duration
 }
 
 // LoggerConfig represents logger configuration
 type LoggerConfig struct {
-	Level  string // debug, info, warn, error
-	Format string // json or text
+	Level  string
+	Format string
 }
 
 // Load loads configuration from environment variables
@@ -51,7 +54,7 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		Server: ServerConfig{
 			Host:            getEnv("SERVER_HOST", "0.0.0.0"),
-			Port:            getEnv("SERVER_PORT", "8080"),
+			Port:            getEnv("SERVER_PORT", "8082"),
 			ReadTimeout:     getDurationEnv("SERVER_READ_TIMEOUT", 10*time.Second),
 			WriteTimeout:    getDurationEnv("SERVER_WRITE_TIMEOUT", 10*time.Second),
 			ShutdownTimeout: getDurationEnv("SERVER_SHUTDOWN_TIMEOUT", 5*time.Second),
@@ -65,7 +68,10 @@ func Load() (*Config, error) {
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		JWT: JWTConfig{
-			PublicKeyPath: getEnv("JWT_PUBLIC_KEY_PATH", "./keys/public.pem"),
+			PrivateKeyPath:  getEnv("JWT_PRIVATE_KEY_PATH", "./keys/private.pem"),
+			PublicKeyPath:   getEnv("JWT_PUBLIC_KEY_PATH", "./keys/public.pem"),
+			AccessTokenTTL:  getDurationEnv("JWT_ACCESS_TOKEN_TTL", 15*time.Minute),
+			RefreshTokenTTL: getDurationEnv("JWT_REFRESH_TOKEN_TTL", 720*time.Hour),
 		},
 		Logger: LoggerConfig{
 			Level:  getEnv("LOG_LEVEL", "info"),

@@ -32,7 +32,7 @@ func (ts *TransactionStorage) Create(ctx context.Context, req *models.CreateTran
 	ts.storage.logger.Info("creating new transaction", "user_id", req.UserID, "type", req.Type)
 
 	query := `
-		INSERT INTO transactions (user_id, amount, category, description, type)
+		INSERT INTO transaction (user_id, amount, category, description, type)
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, user_id, amount, category, description, type, created_at, updated_at
 	`
@@ -70,7 +70,7 @@ func (ts *TransactionStorage) GetByID(ctx context.Context, id uuid.UUID) (*model
 
 	query := `
 		SELECT id, user_id, amount, category, description, type, created_at, updated_at
-		FROM transactions
+		FROM transaction
 		WHERE id = $1
 	`
 
@@ -136,7 +136,7 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 	whereClause := strings.Join(whereConditions, " AND ")
 
 	// Get total count
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM transactions WHERE %s", whereClause)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM transaction WHERE %s", whereClause)
 	var total int64
 	err := ts.storage.pool.QueryRow(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
@@ -150,7 +150,7 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 
 	query := fmt.Sprintf(`
 		SELECT id, user_id, amount, category, description, type, created_at, updated_at
-		FROM transactions
+		FROM transaction
 		WHERE %s
 		ORDER BY created_at DESC
 		LIMIT $%d OFFSET $%d
@@ -238,7 +238,7 @@ func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *mod
 
 	args = append(args, id)
 	query := fmt.Sprintf(`
-		UPDATE transactions
+		UPDATE transaction
 		SET %s
 		WHERE id = $%d
 		RETURNING id, user_id, amount, category, description, type, created_at, updated_at
@@ -273,7 +273,7 @@ func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *mod
 func (ts *TransactionStorage) Delete(ctx context.Context, id uuid.UUID) error {
 	ts.storage.logger.Info("deleting transaction", "id", id)
 
-	query := `DELETE FROM transactions WHERE id = $1`
+	query := `DELETE FROM transaction WHERE id = $1`
 
 	result, err := ts.storage.pool.Exec(ctx, query, id)
 	if err != nil {
