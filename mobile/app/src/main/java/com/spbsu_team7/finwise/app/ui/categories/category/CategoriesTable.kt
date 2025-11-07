@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,7 +31,15 @@ import kotlin.getValue
 import kotlin.math.absoluteValue
 
 @Composable
-fun CategoriesTable(uiState: UiState.Success) {
+fun CategoriesTable(categories: List<Category>) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(categories) {
+        if (categories.isNotEmpty()) {
+            listState.animateScrollToItem(0)
+        }
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Операции", style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(horizontal = 7.dp))
@@ -37,7 +47,7 @@ fun CategoriesTable(uiState: UiState.Success) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            items(items = uiState.categories,
+            items(items = categories,
                 key = { it.id }
             ) { cat ->
                 CategoryRow(category = cat)

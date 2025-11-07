@@ -45,7 +45,7 @@ fun TextWithOption(
         BasicTextField(
             value = value,
             onValueChange = valueChange,
-            textStyle = MaterialTheme.typography.bodyMedium,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
             modifier = Modifier.focusRequester(focusRequester)
                 .onFocusChanged { focusState ->
                     isFocused = focusState.isFocused

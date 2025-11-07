@@ -35,6 +35,13 @@ private val DarkColors = darkColorScheme(
     onSurface = md_theme_dark_onSurface,
     outline = md_theme_dark_outline,
     error = md_theme_dark_error,
+    primaryContainer = md_theme_dark_primary_container,
+    secondaryContainer = md_theme_dark_secondary_container,
+    surfaceVariant = md_theme_dark_onSurface,
+    onSurfaceVariant = md_theme_dark_onSurface,
+    tertiary = md_theme_dark_primary,
+    onTertiary = md_theme_dark_primary,
+    tertiaryContainer = md_theme_dark_primary,
 )
 
 @Composable

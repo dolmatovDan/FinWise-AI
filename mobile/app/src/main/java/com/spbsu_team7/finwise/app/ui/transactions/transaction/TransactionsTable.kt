@@ -6,12 +6,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,15 +32,24 @@ import kotlin.getValue
 import kotlin.math.absoluteValue
 
 @Composable
-fun TransactionsTable(uiState: UiState.Success) {
+fun TransactionsTable(transactions: List<Transaction>) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(transactions) {
+        if (transactions.isNotEmpty()) {
+            listState.animateScrollToItem(0)
+        }
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Операции", style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(horizontal = 7.dp))
         LazyColumn(
+            state = listState,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(items = uiState.transactions.sortedByDescending { it.date.toEpochMilli() },
+            items(items = transactions.sortedByDescending { it.date.toEpochMilli() },
                 key = { it.id }
             ) { ts ->
                 TransactionRow(transaction = ts)

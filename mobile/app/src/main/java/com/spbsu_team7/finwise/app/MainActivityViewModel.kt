@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.spbsu_team7.finwise.core.model.Advice
+import com.spbsu_team7.finwise.core.model.Async
 import com.spbsu_team7.finwise.core.model.Category
 import com.spbsu_team7.finwise.core.model.CategoryToSend
 import com.spbsu_team7.finwise.core.model.ChartsData
@@ -19,7 +20,10 @@ import com.spbsu_team7.finwise.core.model.UserIcon
 import com.spbsu_team7.finwise.core.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
@@ -54,17 +58,43 @@ class ViewModel @Inject constructor (
     private val repository: Repository
 ) : ViewModel() {
     private var _uiState = MutableStateFlow<UiState>(UiState.Loading)
-    val uiState = _uiState.asStateFlow()
+    val uiState =
+        combine(repository.transactions, repository.categories, repository.advices){
+            tr, cat, adv ->
 
-    init {
-        updateMain()
-    }
+            val error = listOf(tr, cat, adv).filterIsInstance<Async.Error>().firstOrNull()?.errorMessage
+            val isLoading = listOf(tr, cat, adv).filterIsInstance<Async.Loading>().isNotEmpty()
+            if (error != null) {
+                UiState.Error(error)
+            } else if (isLoading) {
+                UiState.Loading
+            } else {
+                UiState.Success(
+                    transactions = (tr as Async.Success).data,
+                    status = (repository.getStatus() as Async.Success).data,
+                    categories = (cat as Async.Success).data,
+                    advices = (adv as Async.Success).data,
+                    chartsData = ChartsData(
+                        (repository.getLastMonth() as Async.Success).data,
+                        (repository.getLast3Months() as Async.Success).data,
+                        (repository.getLastYear() as Async.Success).data,
+                        (repository.getCategoriesExpense() as Async.Success).data
+                    ),
+                    icons = repository.getIcons(),
+                    colors = repository.getColors()
+                )
+            }
+
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = UiState.Loading
+        )
 
     private fun sendTransaction(transaction: TransactionToSend) {
         viewModelScope.launch {
             try {
                 repository.sendTransaction(transaction)
-                updateMain()
             } catch (e: Exception) {
                 Log.e("IO", "${e.message} in sendNewTransaction")
             }
@@ -75,43 +105,17 @@ class ViewModel @Inject constructor (
         viewModelScope.launch {
             try {
                 repository.sendCategory(category)
-                updateMain()
+
             } catch (e: Exception) {
                 Log.e("IO", "${e.message} in sendNewCategory")
             }
         }
     }
 
-    private fun updateMain() {
-        viewModelScope.launch {
-            _uiState.value =
-                try {
-                    UiState.Success(
-                        transactions = repository.getTransactions(),
-                        status = repository.getStatus(),
-                        categories = repository.getCategories(),
-                        advices = repository.getAdvices(),
-                        chartsData = ChartsData(
-                            repository.getLastMonthsTransaction(6),
-                            repository.getCategoriesExpense()
-                        ),
-                        icons = repository.getIcons(),
-                        colors = repository.getColors()
-                    )
-                } catch (e: IOException) {
-                    Log.e("IO", "${e.message} in updateMain")
-                    UiState.Error("Ошибка при обновлении, проверьте соединение")
-                } catch (e: HttpException) {
-                    Log.e("HTTP", "${e.message} in updateMain")
-                    UiState.Error("Ошибка при обновлении, проверьте соединение")
-                }
-        }
-    }
-
     fun getEvents() = Events(
         sendCategory = ::sendCategory,
         sendTransaction = ::sendTransaction,
-        onRetry = ::updateMain
+        onRetry = {}
     )
 
     @Composable

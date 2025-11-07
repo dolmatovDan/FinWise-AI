@@ -12,7 +12,7 @@ val FinanceTypography = Typography(
     headlineLarge = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.SemiBold), // в DatePicker
     titleLarge = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold), // для названия приложения
     titleMedium = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold), // для наименований разделов
-    bodyLarge = TextStyle(fontSize = 16.sp),
+    bodyLarge = TextStyle(fontSize = 14.sp),
     bodyMedium = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.W500), // Название операций
     bodySmall = TextStyle(fontSize = 16.sp, color = lightText), // Примеры в полях
     labelLarge = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),

@@ -75,7 +75,8 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 
 [bundles]
 hilt = [
-    "hilt-android"
+    "hilt-android",
+    "androidx-hilt-navigation-compose"
 ]
 
 compose = [

@@ -36,7 +36,7 @@ fun CategoriesScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     AddCategorySection(uiState.colors, uiState.icons, events.sendCategory)
-                    CategoriesTable(uiState)
+                    CategoriesTable(uiState.categories)
                 }
             }
             is UiState.Loading -> {

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirlineSeatIndividualSuite
 import androidx.compose.material.icons.filled.Dining
 import androidx.compose.material.icons.filled.EmojiFoodBeverage
+import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.LocalMovies
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Savings
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.filled.Train
 import androidx.compose.material.icons.filled.VideogameAsset
 import androidx.compose.ui.graphics.Color
 import com.spbsu_team7.finwise.core.model.Advice
+import com.spbsu_team7.finwise.core.model.Async
 import com.spbsu_team7.finwise.core.model.Category
 import com.spbsu_team7.finwise.core.model.CategoryToSend
 import com.spbsu_team7.finwise.core.model.Transaction
@@ -23,18 +25,34 @@ import com.spbsu_team7.finwise.core.model.Status
 import com.spbsu_team7.finwise.core.model.TransactionToSend
 import com.spbsu_team7.finwise.core.model.UserColor
 import com.spbsu_team7.finwise.core.model.UserIcon
+import com.spbsu_team7.finwise.core.repository.di.ApplicationScope
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
+import javax.inject.Inject
+import kotlin.collections.sortedBy
 import kotlin.math.absoluteValue
 
-class TestRepository : Repository {
+class TestRepository @Inject constructor(
+    @ApplicationScope private val coroutineScope: CoroutineScope
+) : Repository {
 
     val categoryList = mutableListOf(
         CategoryToSend(0, "Стипендия", 3, 0),
         CategoryToSend(1, "Питание", 2, 3),
         CategoryToSend(2, "Пополнение проездного", 1, 8),
         CategoryToSend(3, "Продукты", 7, 6),
+        CategoryToSend(4, "Жильё", 9, 7),
     )
 
     val transactionList = mutableListOf(
@@ -80,6 +98,13 @@ class TestRepository : Repository {
             -2000,
             3
         ),
+        TransactionToSend(
+            6,
+            "Оплата общежития",
+            Instant.parse("2025-10-25T10:00:00.000Z"),
+            -10000,
+            4
+        ),
     )
 
     val adviceList = mutableListOf(
@@ -99,38 +124,82 @@ class TestRepository : Repository {
         )
     )
 
-    override suspend fun getTransactions(): List<Transaction> {
-        val categories = getCategories()
-        return transactionList.map { tr -> Transaction(
-            id = tr.id,
-            name = tr.name,
-            date = tr.date,
-            amount = tr.amount,
-            category = categories.get(tr.categoryId)
-        ) }
+    private val _transactions = MutableStateFlow<Async<List<Transaction>>>(Async.Success(emptyList<Transaction>()))
+    private val _categories = MutableStateFlow<Async<List<Category>>>(Async.Success(emptyList<Category>()))
+    private val _advices = MutableStateFlow<Async<List<Advice>>>(Async.Success(emptyList<Advice>()))
+
+    override val transactions: StateFlow<Async<List<Transaction>>> = _transactions
+    override val categories: StateFlow<Async<List<Category>>> = _categories
+    override val advices: StateFlow<Async<List<Advice>>> = _advices
+
+    init {
+        coroutineScope.launch {
+            refreshCategories()
+            refreshTransactions()
+            refreshAdvices()
+        }
     }
 
-
-    override suspend fun getStatus(): Status =
-        Status(
-            transactionList.filter { it.amount >= 0 }.sumOf { it.amount },
-            transactionList.filter { it.amount < 0 }.sumOf { it.amount.absoluteValue },
-            transactionList.sumOf { it.amount }
-        )
-
-
-    override suspend fun getCategories(): List<Category> {
-        val icons = getIcons()
-        val colors = getColors()
-        return categoryList.map { cat -> Category(
-            id = cat.id,
-            name = cat.name,
-            icon = icons.get(cat.iconId).imageVector,
-            color = colors.get(cat.colorId).color
-        ) }
+    suspend fun refreshCategories() {
+        _categories.value = try {
+            val icons = CollectIcons()
+            val colors = CollectColors()
+            Async.Success(categoryList.map { cat ->
+                    Category(
+                        id = cat.id,
+                        name = cat.name,
+                        icon = icons.get(cat.iconId).imageVector,
+                        color = colors.get(cat.colorId).color
+                    )
+                }
+            )
+        } catch(e: Exception) {
+            Async.Error(e.message ?: "")
+        }
     }
 
-    override suspend fun getAdvices(): List<Advice> = adviceList
+    suspend fun refreshTransactions() {
+        _transactions.value = when (categories.value) {
+            is Async.Error -> Async.Error((categories.value as Async.Error).errorMessage)
+            is Async.Loading -> Async.Loading
+            else -> try {
+                Async.Success(transactionList.map { tr ->
+                    Transaction(
+                        id = tr.id,
+                        name = tr.name,
+                        date = tr.date,
+                        amount = tr.amount,
+                        category = (categories.value as Async.Success<List<Category>>).data.get(tr.categoryId)
+                    )
+                }
+                )
+            } catch(e: Exception) {
+                Async.Error(e.message ?: "")
+            }
+        }
+    }
+
+    suspend fun refreshAdvices() {
+        _advices.value = try {
+            Async.Success(adviceList)
+        } catch(e: Exception) {
+            Async.Error(e.message ?: "")
+        }
+    }
+
+    override suspend fun getStatus() =
+        when (transactions.value) {
+            is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
+            is Async.Loading -> Async.Loading
+            else -> Async.Success(Status(
+                (transactions.value as Async.Success<List<Transaction>>).data.filter { it.amount >= 0 }.sumOf { it.amount },
+                (transactions.value as Async.Success<List<Transaction>>).data.filter { it.amount < 0 }.sumOf { it.amount.absoluteValue },
+                (transactions.value as Async.Success<List<Transaction>>).data.sumOf { it.amount }
+                )
+            )
+        }
+
+
 
     override suspend fun getIcons(): List<UserIcon> = CollectIcons()
 
@@ -138,37 +207,139 @@ class TestRepository : Repository {
 
     override suspend fun sendTransaction(transaction: TransactionToSend) {
         transactionList.add(transaction.copy(id = transactionList.size))
+        refreshTransactions()
     }
 
     override suspend fun sendCategory(category: CategoryToSend) {
         categoryList.add(category.copy(id = categoryList.size))
+        refreshCategories()
     }
 
-    override suspend fun getLastMonthsTransaction(months: Int): Pair<List<Int>, List<Int>> {
-        val allTransactions = getTransactions().groupBy {
-            it.date.atZone(ZoneId.systemDefault()).year * 12 +
-                    it.date.atZone(ZoneId.systemDefault()).monthValue
+    override suspend fun getLastMonth(): Async<Stat> {
+        return when (transactions.value) {
+            is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
+            is Async.Loading -> Async.Loading
+            is Async.Success -> {
+                val transactions = (transactions.value as Async.Success).data.sortedBy { it.date.toEpochMilli() }
+                val incomeByDay = transactions.filter {
+                    (it.amount >= 0) && (it.date.atZone(ZoneId.systemDefault()).month.value == LocalDate.now().month.value)
+                }.associate {
+                    it.date.atZone(ZoneId.systemDefault()).dayOfMonth to it.amount
+                }
+                val income = List(31) { incomeByDay.getOrDefault(it, 0) }.runningReduce { acc, value -> acc + value }
+
+                val expenseByDay = transactions.filter {
+                    (it.amount < 0) && (it.date.atZone(ZoneId.systemDefault()).month.value == LocalDate.now().month.value)
+                }.associate {
+                    it.date.atZone(ZoneId.systemDefault()).dayOfMonth to -it.amount
+                }
+                val expense = List(31) { expenseByDay.getOrDefault(it, 0) }.runningReduce { acc, value -> acc + value }
+                Async.Success(Stat(income, expense))
+            }
         }
-            .mapValues { it.value.map { it.amount } }
-        val currentTime = Instant.now().atZone(ZoneId.systemDefault())
-        val currentMonth = currentTime.year * 12 + currentTime.monthValue
-        val periodTransactions = allTransactions.filter { currentMonth - it.key in 0..months }
-        val incomeResults = periodTransactions.mapValues {
-            it.value.sumOf { maxOf(it, 0) }
-        }
-        val expenseResults = periodTransactions.mapValues {
-            it.value.sumOf { -minOf(it, 0) }
-        }
-        return Pair(
-            List(months) { incomeResults.getOrDefault(currentMonth + it, 0) },
-            List(months) { expenseResults.getOrDefault(currentMonth + it, 0) }
-        )
     }
 
-    override suspend fun getCategoriesExpense(): Map<Category, Int> {
-        return getTransactions().filter { it.amount < 0 }.groupBy {
-            it.category
-        }.mapValues { it.value.sumOf { -it.amount } }
+    override suspend fun getLast3Months(): Async<Stat> {
+        return when (transactions.value) {
+            is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
+            is Async.Loading -> Async.Loading
+            is Async.Success -> {
+                val transactions =
+                    (transactions.value as Async.Success).data.sortedBy { it.date.toEpochMilli() }
+                val incomeByDay = transactions.filter {
+                    (it.amount >= 0) && ((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
+                }.associate {
+                    (((LocalDate.now().month.value + 3 - it.date.atZone(ZoneId.systemDefault()).month.value) % 12)) * 31 + it.date.atZone(
+                        ZoneId.systemDefault()
+                    ).dayOfMonth to it.amount
+                }
+
+                val income = List(93) {
+                    incomeByDay.getOrDefault(
+                        it,
+                        0
+                    )
+                }.runningReduce { acc, value -> acc + value }
+
+                val expenseByDay = transactions.filter {
+                    (it.amount < 0) && ((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
+                }.associate {
+                    ((((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12)) * 31 + it.date.atZone(
+                        ZoneId.systemDefault()
+                    ).dayOfMonth) to -it.amount
+                }
+
+                Log.e("test", transactions.filter {
+                    (it.amount < 0) && ((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
+                }.map {
+                    ((((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12)) * 31 + it.date.atZone(
+                    ZoneId.systemDefault()
+                ).dayOfMonth
+                    )
+                }. toString())
+
+                val expense = List(93) {
+                    expenseByDay.getOrDefault(
+                        it,
+                        0
+                    )
+                }.runningReduce { acc, value -> acc + value }.also { Log.e("Expense 3 Months", it.toString()) }
+
+                Async.Success(Stat(income, expense))
+            }
+        }
+    }
+
+
+    override suspend fun getLastYear(): Async<Stat> {
+        return when (transactions.value) {
+            is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
+            is Async.Loading -> Async.Loading
+            is Async.Success -> {
+                val transactions =
+                    (transactions.value as Async.Success).data.sortedBy { it.date.toEpochMilli() }
+
+                val incomeByDay = transactions.filter {
+                    (it.amount >= 0) && (it.date.atZone(ZoneId.systemDefault()).month.value == LocalDate.now().month.value)
+                }.associate {
+                    it.date.atZone(ZoneId.systemDefault()).dayOfMonth to it.amount
+                }
+
+                val income = List(31) {
+                    incomeByDay.getOrDefault(
+                        it,
+                        0
+                    )
+                }.runningReduce { acc, value -> acc + value }
+
+                val expenseByDay = transactions.filter {
+                    (it.amount < 0) && (it.date.atZone(ZoneId.systemDefault()).month.value == LocalDate.now().month.value)
+                }.associate {
+                    it.date.atZone(ZoneId.systemDefault()).dayOfMonth to -it.amount
+                }
+
+                val expense = List(31) {
+                    incomeByDay.getOrDefault(
+                        it,
+                        0
+                    )
+                }.runningReduce { acc, value -> acc + value }
+
+                Async.Success(Stat(income, expense))
+            }
+        }
+    }
+
+    override suspend fun getCategoriesExpense(): Async<Map<Category, Int>> {
+        return when (transactions.value) {
+            is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
+            is Async.Loading -> Async.Loading
+            is Async.Success ->
+                Async.Success((transactions.value as Async.Success).data.filter { it.amount < 0 }.groupBy {
+                    it.category
+                }.mapValues { it.value.sumOf { -it.amount } })
+
+        }
     }
 }
 
@@ -181,7 +352,8 @@ fun CollectIcons() = listOf(
     UserIcon(5, Icons.Default.StackedBarChart),
     UserIcon(6, Icons.Default.Star),
     UserIcon(7, Icons.Default.ShoppingBasket),
-    UserIcon(8, Icons.Default.AirlineSeatIndividualSuite)
+    UserIcon(8, Icons.Default.AirlineSeatIndividualSuite),
+    UserIcon(9, Icons.Default.House),
 )
 
 fun CollectColors() = listOf(
@@ -197,5 +369,9 @@ fun CollectColors() = listOf(
     UserColor(9, Color(0xFFCE67D5))
 )
 
+
+class TestAuthRepository : AuthRepository {
+
+}
 
 

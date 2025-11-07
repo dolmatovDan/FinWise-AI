@@ -32,13 +32,17 @@ import com.spbsu_team7.finwise.app.ui.theme.IncomeGreen
 
 import com.spbsu_team7.finwise.core.model.Category
 import com.spbsu_team7.finwise.core.model.ChartsData
+import com.spbsu_team7.finwise.core.model.Transaction
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.PieChart
 import ir.ehsannarmani.compose_charts.models.HorizontalIndicatorProperties
 import ir.ehsannarmani.compose_charts.models.LabelProperties
 import ir.ehsannarmani.compose_charts.models.Line
 import ir.ehsannarmani.compose_charts.models.Pie
+import java.time.LocalDate
 import java.time.ZoneId
+import java.util.Date
+import kotlin.time.Instant
 
 @Composable
 fun ChartsSection(uiState: UiState.Success) {
@@ -56,11 +60,10 @@ fun ChartsSection(uiState: UiState.Success) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Расходы по категориям", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(12.dp))
-                val transactions = uiState.chartsData.lastSixMonthTransactions
+                val transactions = uiState.chartsData.categoriesExpense
                 IncomeExpensePieChart(uiState.chartsData.categoriesExpense)
             }
         }
-
         Surface(
             modifier = Modifier.fillMaxWidth().border(
                 width = 1.dp,
@@ -82,24 +85,31 @@ fun ChartsSection(uiState: UiState.Success) {
 //                val transactions = uiState.chartsData.lastSixMonthTransactions
 //                IncomeExpenseLineChart(transactions.first,
 //                    transactions.second)
-                var selectedFilter by remember { mutableStateOf(FilterType.Month) }
+                val filters = listOf(
+                    FilterType("за месяц",
+                        uiState.chartsData.lastMonthTransactions.income,
+                        uiState.chartsData.lastMonthTransactions.expense
+                    ),
+                    FilterType("за 3 месяца",
+                        uiState.chartsData.last3MonthsTransactions.income,
+                        uiState.chartsData.last3MonthsTransactions.expense
+                    ),
+                    FilterType("за год",
+                        uiState.chartsData.lastYearTransactions.income,
+                        uiState.chartsData.lastYearTransactions.expense
+                    ),
+                )
 
-                val transactions = uiState.transactions.sortedBy { it.date.toEpochMilli() }
-                val incomeByDay = transactions.filter { it.amount >= 0 }.associate {
-                    it.date.atZone(ZoneId.systemDefault()).dayOfMonth to it.amount
-                }
-                val incomeData = List(31) { incomeByDay.getOrDefault(it, 0) }
-                val expenseByDay = transactions.filter { it.amount < 0 }.associate {
-                    it.date.atZone(ZoneId.systemDefault()).dayOfMonth to -it.amount
-                }
-                val expenseData = List(31) { expenseByDay.getOrDefault(it, 0) }
+                var selectedFilter by remember { mutableStateOf(filters.get(1)) }
+
                 IncomeExpenseLineChart(
                     Modifier.weight(0.8f),
-                    incomeData.runningReduce { acc, value -> acc + value },
-                    expenseData.runningReduce { acc, value -> acc + value }
+                    selectedFilter,
+                    uiState.transactions
                 )
                 Filters(
                     modifier = Modifier.weight(0.1f),
+                    filters = filters,
                     onChange = { selectedFilter = it },
                     selectedFilter = selectedFilter
                 )
@@ -111,6 +121,7 @@ fun ChartsSection(uiState: UiState.Success) {
 @Composable
 fun Filters(
     modifier: Modifier,
+    filters: List<FilterType>,
     onChange: (FilterType) -> Unit,
     selectedFilter: FilterType
 ) {
@@ -119,7 +130,7 @@ fun Filters(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FilterType.entries.forEach {
+        filters.forEach {
                 type ->
             val color = if (selectedFilter == type) MaterialTheme.colorScheme.surface
             else MaterialTheme.colorScheme.secondaryContainer
@@ -157,39 +168,40 @@ fun Filters(
 @Composable
 fun IncomeExpenseLineChart(
     modifier: Modifier,
-    incomeData: List<Int>,
-    expenseData: List<Int>
+    filter: FilterType,
+    transactions: List<Transaction>
 ) {
+
     LineChart(
         modifier = modifier,
-        data = remember {
+        data =
             listOf(
                 Line(
-                    label = "Доход",
-                    values = incomeData.map { it.toDouble() },
+                    values = filter.income.map { it.toDouble() }.also { Log.d("l", it.toString()) },
                     color = SolidColor(IncomeGreen)
             ),
                 Line(
-                    label = "Расход",
-                    values = expenseData.map { it.toDouble() },
+                    values = filter.expense.map { it.toDouble() }.also { Log.d("l", it.toString()) },
                     color = SolidColor(ExpenseRed)
                 ),
             )
-        },
+        ,
         indicatorProperties = HorizontalIndicatorProperties(
             enabled = true,
             contentBuilder = { indicator ->
                 indicator.toInt().toString()
-            }
+            },
+            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
         ),
-        labelProperties = LabelProperties(
-            enabled = true,
-            labels = listOf("1", "5", "10", "15", "20", "25", "30"),
-            rotation = LabelProperties.Rotation(degree = 0f)
-        ),
+//        labelProperties = LabelProperties(
+//            enabled = true,
+//            labels = listOf("1", "5", "10", "15", "20", "25", "30"),
+//            rotation = LabelProperties.Rotation(degree = 0f),
+//            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
+//        ),
         curvedEdges = false,
         minValue = 0.0,
-        maxValue = maxOf(incomeData.max(), expenseData.max()).toDouble() * 1.2
+        maxValue = maxOf(filter.income.max(), filter.expense.max()).toDouble() * 1.2
     )
 }
 
@@ -248,8 +260,4 @@ fun IncomeExpensePieChart(categoriesIncome: Map<Category, Int>) {
 
 }
 
-enum class FilterType(val text: String) {
-    Month("за месяц"),
-    Month3("за 3 месяца"),
-    Year("за год")
-}
+data class FilterType(val text: String, val income: List<Int>, val expense: List<Int>)

@@ -6,9 +6,7 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class FinWiseApplication : Application() {
-
     override fun onCreate() {
         super.onCreate()
-        println("HiltAndroidApp Application is created!")
     }
 }
