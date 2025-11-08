@@ -38,10 +38,8 @@ data class Events(
 sealed interface UiState {
     data class Success(
         val transactions: List<Transaction>,
-        val status: Status,
         val categories: List<Category>,
         val advices: List<Advice>,
-        val chartsData: ChartsData,
         val icons: List<UserIcon>,
         val colors: List<UserColor>
     ) : UiState
@@ -57,7 +55,6 @@ sealed interface UiState {
 class ViewModel @Inject constructor (
     private val repository: Repository
 ) : ViewModel() {
-    private var _uiState = MutableStateFlow<UiState>(UiState.Loading)
     val uiState =
         combine(repository.transactions, repository.categories, repository.advices){
             tr, cat, adv ->
@@ -71,15 +68,8 @@ class ViewModel @Inject constructor (
             } else {
                 UiState.Success(
                     transactions = (tr as Async.Success).data,
-                    status = (repository.getStatus() as Async.Success).data,
                     categories = (cat as Async.Success).data,
                     advices = (adv as Async.Success).data,
-                    chartsData = ChartsData(
-                        (repository.getLastMonth() as Async.Success).data,
-                        (repository.getLast3Months() as Async.Success).data,
-                        (repository.getLastYear() as Async.Success).data,
-                        (repository.getCategoriesExpense() as Async.Success).data
-                    ),
                     icons = repository.getIcons(),
                     colors = repository.getColors()
                 )

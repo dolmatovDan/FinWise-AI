@@ -15,9 +15,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val viewModel: ViewModel = hiltViewModel()
             FinanceTheme {
-                MainScreen(viewModel, viewModel.getEvents())
+                MainScreen()
             }
         }
     }
