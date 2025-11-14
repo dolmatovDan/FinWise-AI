@@ -18,7 +18,7 @@ hilt = "2.56"
 hiltExt = "1.2.0"
 ksp = "2.1.10-1.0.31"
 androidxHiltNavigationCompose = "1.2.0"
-
+gson = "2.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,6 +52,8 @@ compose-charts = { group = "io.github.ehsannarmani", name = "compose-charts", ve
 
 # RETROFIT
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+gson = { group = "com.google.code.gson", name = "gson", version = "gson" }
 
 # HILT
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
@@ -100,5 +102,7 @@ charts = [
 ]
 
 retrofit = [
-    "retrofit"
+    "retrofit",
+    "converter-gson",
+    "gson"
 ]

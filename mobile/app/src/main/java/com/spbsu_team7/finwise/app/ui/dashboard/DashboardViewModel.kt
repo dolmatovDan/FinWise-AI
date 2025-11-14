@@ -10,6 +10,7 @@ import com.spbsu_team7.finwise.app.ui.dashboard.FilterTypes.LAST_3MONTHS
 import com.spbsu_team7.finwise.app.ui.dashboard.FilterTypes.LAST_YEAR
 import com.spbsu_team7.finwise.app.Events
 import com.spbsu_team7.finwise.app.UiState
+import com.spbsu_team7.finwise.app.ui.util.WhileUiSubscribed
 import com.spbsu_team7.finwise.core.model.Advice
 import com.spbsu_team7.finwise.core.model.Async
 import com.spbsu_team7.finwise.core.model.Category
@@ -21,6 +22,7 @@ import com.spbsu_team7.finwise.core.model.TransactionToSend
 import com.spbsu_team7.finwise.core.model.UserColor
 import com.spbsu_team7.finwise.core.model.UserIcon
 import com.spbsu_team7.finwise.core.repository.Repository
+import com.spbsu_team7.finwise.core.repository.Stat
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,8 +40,9 @@ data class DashboardEvents(
 
 sealed interface DashboardUiState {
     data class Success(
-        val status: Status,
-        val chartsData: ChartsData,
+        val status: Async<Status>,
+        val balanceData: Async<Stat>,
+        val categoryData: Async<Map<Category, Int>>,
         val filter: FilterTypes
     ) : DashboardUiState
 
@@ -55,45 +58,48 @@ class DashboardViewModel @Inject constructor (
     private val repository: Repository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    private val filterType =  savedStateHandle.getStateFlow(TRANSACTIONS_FILTER_SAVED_STATE_KEY, LAST_3MONTHS)
 
-    val filterType =  savedStateHandle.getStateFlow(TRANSACTIONS_FILTER_SAVED_STATE_KEY, LAST_3MONTHS)
-    val filteredTransactions = combine(repository.transactions, filterType) {
-        transactions, type ->
-        if (transactions is Async.Loading) return@combine Async.Loading
-        if (transactions is Async.Error) return@combine Async.Error(transactions.errorMessage)
-        return@combine when (type) {
-            LAST_MONTH -> Async.Success(ChartsData(
-                (repository.getLastMonth() as Async.Success).data,
-                (repository.getCategoriesExpense() as Async.Success).data
-            ))
-            LAST_3MONTHS -> Async.Success(ChartsData(
-                (repository.getLast3Months() as Async.Success).data,
-                (repository.getCategoriesExpense() as Async.Success).data
-            ))
-            LAST_YEAR -> Async.Success(ChartsData(
-                (repository.getLastYear() as Async.Success).data,
-                (repository.getCategoriesExpense() as Async.Success).data
-            ))
+    private val filteredIncomeExpense =
+        combine(
+            repository.lastMonth,
+            repository.last3Months,
+            repository.lastYear,
+            filterType
+        ) {
+            month, months3, year, type ->
+            when (type) {
+                LAST_MONTH -> month
+                LAST_3MONTHS -> months3
+                LAST_YEAR -> year
+            }
         }
-    }
-    val uiState =
-        filteredTransactions.map {
-                tr ->
-            if (tr is Async.Error) {
-                DashboardUiState.Error(tr.errorMessage)
-            } else if (tr is Async.Loading) {
-                DashboardUiState.Loading
-            } else {
+
+    private val filteredCategories =
+        combine(
+            repository.lastMonthCatExp,
+            repository.last3MonthsCatExp,
+            repository.lastYearCatExp,
+            filterType
+        ) {
+                month, months3, year, type ->
+            when (type) {
+                LAST_MONTH -> month
+                LAST_3MONTHS -> month
+                LAST_YEAR -> month
+            }
+        }
+    val uiState = combine(filteredCategories, filteredIncomeExpense, repository.status)
+        { categoryData, balanceData, status ->
                 DashboardUiState.Success(
-                    status = (repository.getStatus() as Async.Success).data,
-                    chartsData = (tr as Async.Success).data,
+                    status = status,
+                    balanceData = balanceData,
+                    categoryData = categoryData,
                     filter = filterType.value
                 )
-            }
-
         }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = WhileUiSubscribed,
             initialValue = DashboardUiState.Loading
         )
 

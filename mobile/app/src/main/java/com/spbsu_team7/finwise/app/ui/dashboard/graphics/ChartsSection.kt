@@ -30,6 +30,7 @@ import com.spbsu_team7.finwise.app.ui.dashboard.DashboardUiState
 import com.spbsu_team7.finwise.app.ui.dashboard.FilterTypes
 import com.spbsu_team7.finwise.app.ui.theme.ExpenseRed
 import com.spbsu_team7.finwise.app.ui.theme.IncomeGreen
+import com.spbsu_team7.finwise.core.model.Async
 
 
 import com.spbsu_team7.finwise.core.model.Category
@@ -48,7 +49,7 @@ import java.util.Date
 import kotlin.time.Instant
 
 @Composable
-fun ChartsSection(chartsData: ChartsData, changeFilter: (FilterTypes) -> Unit, filter: FilterTypes) {
+fun ChartsSection(transactions: Async<Stat> ,categoriesExpense: Async<Map<Category, Int>>, changeFilter: (FilterTypes) -> Unit, filter: FilterTypes) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
         Surface(
@@ -63,8 +64,7 @@ fun ChartsSection(chartsData: ChartsData, changeFilter: (FilterTypes) -> Unit, f
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Расходы по категориям", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(12.dp))
-                val transactions = chartsData.categoriesExpense
-                IncomeExpensePieChart(chartsData.categoriesExpense)
+                if (categoriesExpense is Async.Success) IncomeExpensePieChart(categoriesExpense.data)
             }
         }
         Surface(
@@ -85,15 +85,10 @@ fun ChartsSection(chartsData: ChartsData, changeFilter: (FilterTypes) -> Unit, f
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(0.1f)
                 )
-//                val transactions = uiState.chartsData.lastSixMonthTransactions
-//                IncomeExpenseLineChart(transactions.first,
-//                    transactions.second)
-
-
-                IncomeExpenseLineChart(
-                    Modifier.weight(0.8f),
-                    chartsData.transactions
-                )
+                if (transactions is Async.Success) IncomeExpenseLineChart(
+                        Modifier.weight(0.8f),
+                        transactions.data
+                    )
                 Filters(
                     modifier = Modifier.weight(0.1f),
                     onChange = changeFilter,
@@ -185,7 +180,7 @@ fun IncomeExpenseLineChart(
 //        ),
         curvedEdges = false,
         minValue = 0.0,
-        maxValue = maxOf(transactions.income.max(), transactions.expense.max()).toDouble() * 1.2
+        maxValue = maxOf(transactions.income.maxOrNull() ?: 1, transactions.expense.maxOrNull() ?: 0).toDouble() * 1.2
     )
 }
 

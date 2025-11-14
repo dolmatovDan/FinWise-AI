@@ -14,9 +14,19 @@ import com.spbsu_team7.finwise.core.model.Status
 
 import com.spbsu_team7.finwise.app.ui.theme.ExpenseRed
 import com.spbsu_team7.finwise.app.ui.theme.IncomeGreen
+import com.spbsu_team7.finwise.core.model.Async
 
 @Composable
-fun SummarySection(status: Status, modifier: Modifier = Modifier) {
+fun SummarySection(status: Async<Status>, modifier: Modifier = Modifier) {
+    when(status) {
+        is Async.Success -> SummarySectionContent(status.data, modifier)
+        is Async.Loading -> SummarySectionContentLoading(modifier)
+        is Async.Error -> SummarySectionContentLoading(modifier)
+    }
+}
+
+@Composable
+fun SummarySectionContent(status: Status, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -24,6 +34,18 @@ fun SummarySection(status: Status, modifier: Modifier = Modifier) {
         SummaryCard(title = "Доход", amount = status.income.toString() + " ₽", color = IncomeGreen,  modifier = Modifier.weight(1f))
         SummaryCard(title = "Расход", amount = status.expence.toString() + " ₽", color = ExpenseRed, modifier = Modifier.weight(1f))
         SummaryCard(title = "Баланс", amount = status.balance.toString() + " ₽", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun SummarySectionContentLoading(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SummaryCard(title = "Доход", amount = "...", color = IncomeGreen,  modifier = Modifier.weight(1f))
+        SummaryCard(title = "Расход", amount = "...", color = ExpenseRed, modifier = Modifier.weight(1f))
+        SummaryCard(title = "Баланс", amount = "...", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
     }
 }
 

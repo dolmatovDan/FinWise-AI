@@ -35,7 +35,7 @@ fun DashboardScreen(
                 ) {
 
                     SummarySection(uiState.status, modifier = Modifier.fillMaxWidth())
-                    ChartsSection(uiState.chartsData, viewModel::changeFilter, uiState.filter)
+                    ChartsSection(uiState.balanceData, uiState.categoryData, viewModel::changeFilter, uiState.filter)
                 }
             }
 

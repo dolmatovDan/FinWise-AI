@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Train
 import androidx.compose.material.icons.filled.VideogameAsset
 import androidx.compose.ui.graphics.Color
+import com.spbsu_team7.finwise.app.ui.util.WhileUiSubscribed
 import com.spbsu_team7.finwise.core.model.Advice
 import com.spbsu_team7.finwise.core.model.Async
 import com.spbsu_team7.finwise.core.model.Category
@@ -32,8 +33,13 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -127,16 +133,45 @@ class TestRepository @Inject constructor(
     private val _transactions = MutableStateFlow<Async<List<Transaction>>>(Async.Success(emptyList<Transaction>()))
     private val _categories = MutableStateFlow<Async<List<Category>>>(Async.Success(emptyList<Category>()))
     private val _advices = MutableStateFlow<Async<List<Advice>>>(Async.Success(emptyList<Advice>()))
+    private val _lastMonth = MutableStateFlow<Async<Stat>>(Async.Success(Stat()))
+    private val _last3Months = MutableStateFlow<Async<Stat>>(Async.Success(Stat()))
+    private val _lastYear = MutableStateFlow<Async<Stat>>(Async.Success(Stat()))
+    private val _lastMonthCatExp = MutableStateFlow<Async<Map<Category, Int>>>(Async.Success(emptyMap()))
+    private val _last3MonthsCatExp = MutableStateFlow<Async<Map<Category, Int>>>(Async.Success(emptyMap()))
+    private val _lastYearCatExp = MutableStateFlow<Async<Map<Category, Int>>>(Async.Success(emptyMap()))
 
     override val transactions: StateFlow<Async<List<Transaction>>> = _transactions
     override val categories: StateFlow<Async<List<Category>>> = _categories
     override val advices: StateFlow<Async<List<Advice>>> = _advices
+    override val lastMonth: StateFlow<Async<Stat>> = _lastMonth
+    override val last3Months: StateFlow<Async<Stat>> = _last3Months
+    override val lastYear: StateFlow<Async<Stat>> = _lastYear
+    override val lastMonthCatExp: StateFlow<Async<Map<Category, Int>>> = _lastMonthCatExp
+    override val last3MonthsCatExp: StateFlow<Async<Map<Category, Int>>> = _last3MonthsCatExp
+    override val lastYearCatExp: StateFlow<Async<Map<Category, Int>>> = _lastYearCatExp
+    override val status: StateFlow<Async<Status>> = transactions.map {
+        transactions ->
+        when (transactions) {
+            is Async.Error -> Async.Error(transactions.errorMessage)
+            is Async.Loading -> Async.Loading
+            else -> Async.Success(Status(
+                (transactions as Async.Success<List<Transaction>>).data.filter { it.amount >= 0 }.sumOf { it.amount },
+                (transactions as Async.Success<List<Transaction>>).data.filter { it.amount < 0 }.sumOf { it.amount.absoluteValue },
+                (transactions as Async.Success<List<Transaction>>).data.sumOf { it.amount }
+            )
+            )
+        }
+    }.stateIn(scope = coroutineScope, started = WhileUiSubscribed, initialValue = Async.Loading)
 
     init {
         coroutineScope.launch {
             refreshCategories()
             refreshTransactions()
             refreshAdvices()
+            refreshLastMonth()
+            refreshLast3Months()
+            refreshLastYear()
+            refreshCategoriesExpense()
         }
     }
 
@@ -187,20 +222,6 @@ class TestRepository @Inject constructor(
         }
     }
 
-    override suspend fun getStatus() =
-        when (transactions.value) {
-            is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
-            is Async.Loading -> Async.Loading
-            else -> Async.Success(Status(
-                (transactions.value as Async.Success<List<Transaction>>).data.filter { it.amount >= 0 }.sumOf { it.amount },
-                (transactions.value as Async.Success<List<Transaction>>).data.filter { it.amount < 0 }.sumOf { it.amount.absoluteValue },
-                (transactions.value as Async.Success<List<Transaction>>).data.sumOf { it.amount }
-                )
-            )
-        }
-
-
-
     override suspend fun getIcons(): List<UserIcon> = CollectIcons()
 
     override suspend fun getColors(): List<UserColor> = CollectColors()
@@ -208,6 +229,10 @@ class TestRepository @Inject constructor(
     override suspend fun sendTransaction(transaction: TransactionToSend) {
         transactionList.add(transaction.copy(id = transactionList.size))
         refreshTransactions()
+        refreshLastMonth()
+        refreshLast3Months()
+        refreshLastYear()
+        refreshCategoriesExpense()
     }
 
     override suspend fun sendCategory(category: CategoryToSend) {
@@ -215,8 +240,8 @@ class TestRepository @Inject constructor(
         refreshCategories()
     }
 
-    override suspend fun getLastMonth(): Async<Stat> {
-        return when (transactions.value) {
+    suspend fun refreshLastMonth() {
+        _lastMonth.value = when (transactions.value) {
             is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
             is Async.Loading -> Async.Loading
             is Async.Success -> {
@@ -239,8 +264,8 @@ class TestRepository @Inject constructor(
         }
     }
 
-    override suspend fun getLast3Months(): Async<Stat> {
-        return when (transactions.value) {
+    suspend fun refreshLast3Months() {
+        _last3Months.value = when (transactions.value) {
             is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
             is Async.Loading -> Async.Loading
             is Async.Success -> {
@@ -291,8 +316,8 @@ class TestRepository @Inject constructor(
     }
 
 
-    override suspend fun getLastYear(): Async<Stat> {
-        return when (transactions.value) {
+    suspend fun refreshLastYear() {
+        _lastYear.value = when (transactions.value) {
             is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
             is Async.Loading -> Async.Loading
             is Async.Success -> {
@@ -330,8 +355,8 @@ class TestRepository @Inject constructor(
         }
     }
 
-    override suspend fun getCategoriesExpense(): Async<Map<Category, Int>> {
-        return when (transactions.value) {
+     suspend fun refreshCategoriesExpense() {
+         _lastMonthCatExp.value = when (transactions.value) {
             is Async.Error -> Async.Error((transactions.value as Async.Error).errorMessage)
             is Async.Loading -> Async.Loading
             is Async.Success ->
@@ -368,10 +393,5 @@ fun CollectColors() = listOf(
     UserColor(8, Color(0xFF673AB7)),
     UserColor(9, Color(0xFFCE67D5))
 )
-
-
-class TestAuthRepository : AuthRepository {
-
-}
 
 

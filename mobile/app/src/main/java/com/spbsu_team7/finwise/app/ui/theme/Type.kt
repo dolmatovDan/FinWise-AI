@@ -16,6 +16,6 @@ val FinanceTypography = Typography(
     bodyMedium = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.W500), // Название операций
     bodySmall = TextStyle(fontSize = 16.sp, color = lightText), // Примеры в полях
     labelLarge = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium),
-    labelSmall = TextStyle(fontSize = 11.sp, color = lightText) // Используется для маленького текста в операциях,
-
+    labelSmall = TextStyle(fontSize = 11.sp, color = lightText), // Используется для маленького текста в операциях,
+    displayMedium = TextStyle(fontSize = 40.sp, fontWeight = FontWeight.SemiBold)
 )

@@ -17,20 +17,18 @@ interface Repository {
     val transactions: StateFlow<Async<List<Transaction>>>
     val categories: StateFlow<Async<List<Category>>>
     val advices: StateFlow<Async<List<Advice>>>
-    suspend fun getStatus(): Async<Status>
-    suspend fun getLastMonth(): Async<Stat>
-    suspend fun getLast3Months(): Async<Stat>
-    suspend fun getLastYear(): Async<Stat>
-    suspend fun getCategoriesExpense(): Async<Map<Category, Int>>
+    val lastMonth: StateFlow<Async<Stat>>
+    val last3Months: StateFlow<Async<Stat>>
+    val lastYear: StateFlow<Async<Stat>>
+    val lastMonthCatExp: StateFlow<Async<Map<Category, Int>>>
+    val last3MonthsCatExp: StateFlow<Async<Map<Category, Int>>>
+    val lastYearCatExp: StateFlow<Async<Map<Category, Int>>>
+    val status: StateFlow<Async<Status>>
+
     suspend fun getIcons(): List<UserIcon>
     suspend fun getColors(): List<UserColor>
     suspend fun sendTransaction(transaction: TransactionToSend)
     suspend fun sendCategory(category: CategoryToSend)
 }
 
-interface AuthRepository {
-
-}
-
-
-data class Stat(val income: List<Int>, val expense: List<Int>)
+data class Stat(val income: List<Int> = emptyList(), val expense: List<Int> = emptyList())

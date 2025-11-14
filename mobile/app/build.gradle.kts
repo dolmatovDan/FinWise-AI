@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.bundles.viewmodel)
     implementation(libs.bundles.charts)
     implementation(libs.bundles.hilt)
+    implementation(libs.bundles.retrofit)
 
     ksp(libs.hilt.compiler)
 }

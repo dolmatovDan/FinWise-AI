@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.spbsu_team7.finwise.app.ui.MainScreen
+import com.spbsu_team7.finwise.app.ui.auth.AuthScreen
 import com.spbsu_team7.finwise.app.ui.theme.FinanceTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -16,7 +17,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FinanceTheme {
-                MainScreen()
+                Navigation()
             }
         }
     }
