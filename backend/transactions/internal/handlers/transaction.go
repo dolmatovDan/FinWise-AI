@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/middleware"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/service"
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,13 @@ type ErrorResponse struct {
 func (h *TransactionHandler) Create(c *gin.Context) {
 	h.logger.Info("handler: create transaction request")
 
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		h.logger.Error("handler: user_id not found in context")
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return
+	}
+
 	var req models.CreateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Warn("handler: failed to bind JSON", "error", err)
@@ -55,6 +63,8 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 		})
 		return
 	}
+
+	req.UserID = userID
 
 	transaction, err := h.service.Create(c.Request.Context(), &req)
 	if err != nil {
@@ -85,6 +95,13 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
 	h.logger.Info("handler: get transaction by id", "id", idStr)
 
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		h.logger.Error("handler: user_id not found in context")
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return
+	}
+
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		h.logger.Warn("handler: invalid UUID", "id", idStr, "error", err)
@@ -100,6 +117,12 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get transaction"})
+		return
+	}
+
+	if transaction.UserID != userID {
+		h.logger.Warn("handler: user tried to access another user's transaction", "user_id", userID, "transaction_user_id", transaction.UserID)
+		c.JSON(http.StatusForbidden, ErrorResponse{Error: "Access denied"})
 		return
 	}
 
@@ -122,6 +145,13 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 func (h *TransactionHandler) List(c *gin.Context) {
 	h.logger.Info("handler: list transactions request")
 
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		h.logger.Error("handler: user_id not found in context")
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return
+	}
+
 	var filter models.TransactionFilter
 	if err := c.ShouldBindQuery(&filter); err != nil {
 		h.logger.Warn("handler: failed to bind query params", "error", err)
@@ -132,7 +162,8 @@ func (h *TransactionHandler) List(c *gin.Context) {
 		return
 	}
 
-	// Set default values for pagination if not provided
+	filter.UserID = userID
+
 	if filter.Page == 0 {
 		filter.Page = 1
 	}
@@ -170,10 +201,34 @@ func (h *TransactionHandler) Update(c *gin.Context) {
 	idStr := c.Param("id")
 	h.logger.Info("handler: update transaction request", "id", idStr)
 
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		h.logger.Error("handler: user_id not found in context")
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return
+	}
+
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		h.logger.Warn("handler: invalid UUID", "id", idStr, "error", err)
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid transaction ID format"})
+		return
+	}
+
+	existingTransaction, err := h.service.GetByID(c.Request.Context(), id)
+	if err != nil {
+		h.logger.Error("handler: failed to get transaction", "id", id, "error", err)
+		if errors.Is(err, service.ErrNotFound) || strings.Contains(err.Error(), "not found") {
+			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Transaction not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get transaction"})
+		return
+	}
+
+	if existingTransaction.UserID != userID {
+		h.logger.Warn("handler: user tried to update another user's transaction", "user_id", userID, "transaction_user_id", existingTransaction.UserID)
+		c.JSON(http.StatusForbidden, ErrorResponse{Error: "Access denied"})
 		return
 	}
 
@@ -219,10 +274,34 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	h.logger.Info("handler: delete transaction request", "id", idStr)
 
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		h.logger.Error("handler: user_id not found in context")
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return
+	}
+
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		h.logger.Warn("handler: invalid UUID", "id", idStr, "error", err)
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid transaction ID format"})
+		return
+	}
+
+	existingTransaction, err := h.service.GetByID(c.Request.Context(), id)
+	if err != nil {
+		h.logger.Error("handler: failed to get transaction", "id", id, "error", err)
+		if errors.Is(err, service.ErrNotFound) || strings.Contains(err.Error(), "not found") {
+			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Transaction not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to get transaction"})
+		return
+	}
+
+	if existingTransaction.UserID != userID {
+		h.logger.Warn("handler: user tried to delete another user's transaction", "user_id", userID, "transaction_user_id", existingTransaction.UserID)
+		c.JSON(http.StatusForbidden, ErrorResponse{Error: "Access denied"})
 		return
 	}
 
