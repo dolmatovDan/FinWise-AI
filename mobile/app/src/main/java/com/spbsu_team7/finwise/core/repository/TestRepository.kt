@@ -277,7 +277,7 @@ class TestRepository (
                 val incomeByDay = transactions.filter {
                     (it.amount >= 0) && ((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
                 }.associate {
-                    (((LocalDate.now().month.value + 3 - it.date.atZone(ZoneId.systemDefault()).month.value) % 12)) * 31 + it.date.atZone(
+                    (((2 - LocalDate.now().month.value + it.date.atZone(ZoneId.systemDefault()).month.value) % 12)) * 31 + it.date.atZone(
                         ZoneId.systemDefault()
                     ).dayOfMonth to it.amount
                 }
@@ -289,10 +289,15 @@ class TestRepository (
                     )
                 }.runningReduce { acc, value -> acc + value }
 
+
+                Log.d("", transactions.filter {
+                    (it.amount < 0) && ((-LocalDate.now().month.value + it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
+                }.toString())
+
                 val expenseByDay = transactions.filter {
-                    (it.amount < 0) && ((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
+                    (it.amount < 0) && ((2 - LocalDate.now().month.value + it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
                 }.associate {
-                    ((((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12)) * 31 + it.date.atZone(
+                    ((((2 - LocalDate.now().month.value + it.date.atZone(ZoneId.systemDefault()).month.value) % 12)) * 31 + it.date.atZone(
                         ZoneId.systemDefault()
                     ).dayOfMonth) to -it.amount
                 }
