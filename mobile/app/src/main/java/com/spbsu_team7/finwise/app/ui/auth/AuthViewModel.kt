@@ -17,12 +17,10 @@ import javax.inject.Inject
 
 
 sealed interface AuthUiState {
-    data class UnAuthenticated(
+    data class Success(
         val email: String = "",
         val password: String = ""
     ) : AuthUiState
-
-    object Authenticated : AuthUiState
 
     data class Error(
         val error: String
@@ -41,10 +39,7 @@ class AuthViewModel @Inject constructor (
     val uiState =
         combine(authRepository.getRefreshTokenStream(), _email, _password) {
                 refreshToken, email, password ->
-            if (refreshToken == null)
-                AuthUiState.UnAuthenticated(email, password)
-            else
-                AuthUiState.Authenticated
+                AuthUiState.Success(email, password)
         }.stateIn(
             scope = viewModelScope,
             started = WhileUiSubscribed,

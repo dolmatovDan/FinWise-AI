@@ -156,11 +156,11 @@ fun IncomeExpenseLineChart(
         data =
             listOf(
                 Line(
-                    values = transactions.income.map { it.toDouble() }.also { Log.d("l", it.toString()) },
+                    values = transactions.income.map { it.toDouble() },
                     color = SolidColor(IncomeGreen)
             ),
                 Line(
-                    values = transactions.expense.map { it.toDouble() }.also { Log.d("l", it.toString()) },
+                    values = transactions.expense.map { it.toDouble() },
                     color = SolidColor(ExpenseRed)
                 ),
             )
@@ -202,7 +202,6 @@ fun IncomeExpensePieChart(categoriesIncome: Map<Category, Int>) {
             modifier = Modifier.fillMaxSize(fraction = 0.8f),
             data = data,
             onPieClick = {
-                println("${it.label} Clicked")
                 val pieIndex = data.indexOf(it)
                 showLegend = !it.selected
                 data = data.mapIndexed { mapIndex, pie -> pie.copy(selected = showLegend && (pieIndex == mapIndex)) }

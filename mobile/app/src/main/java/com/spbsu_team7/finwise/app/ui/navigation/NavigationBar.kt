@@ -41,8 +41,8 @@ fun NavigationBar(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp)
-                .padding(horizontal = 16.dp, vertical = 0.dp),
+                .height(70.dp)
+                .padding(end = 16.dp, start = 16.dp, bottom = 16.dp),
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.secondaryContainer
         ) {

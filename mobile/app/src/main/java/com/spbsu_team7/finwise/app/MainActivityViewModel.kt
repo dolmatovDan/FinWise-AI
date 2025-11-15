@@ -18,6 +18,7 @@ import com.spbsu_team7.finwise.core.model.TransactionToSend
 import com.spbsu_team7.finwise.core.model.UserColor
 import com.spbsu_team7.finwise.core.model.UserIcon
 import com.spbsu_team7.finwise.core.repository.Repository
+import com.spbsu_team7.finwise.core.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -53,8 +54,13 @@ sealed interface UiState {
 
 @HiltViewModel
 class ViewModel @Inject constructor (
-    private val repository: Repository
+    private val sessionManager: SessionManager
 ) : ViewModel() {
+
+    private val repository: Repository by lazy {
+        sessionManager.getOrCreateRepository()
+    }
+
     val uiState =
         combine(repository.transactions, repository.categories, repository.advices){
             tr, cat, adv ->
@@ -110,4 +116,9 @@ class ViewModel @Inject constructor (
 
     @Composable
     fun getState() = uiState.collectAsState().value
+
+    override fun onCleared() {
+        super.onCleared()
+        sessionManager.releaseRepository()
+    }
 }

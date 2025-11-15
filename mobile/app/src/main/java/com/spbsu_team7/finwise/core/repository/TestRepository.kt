@@ -46,11 +46,13 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.collections.sortedBy
 import kotlin.math.absoluteValue
 
-class TestRepository @Inject constructor(
-    @ApplicationScope private val coroutineScope: CoroutineScope
+@Singleton
+class TestRepository (
+    private val coroutineScope: CoroutineScope
 ) : Repository {
 
     val categoryList = mutableListOf(
@@ -165,6 +167,7 @@ class TestRepository @Inject constructor(
 
     init {
         coroutineScope.launch {
+            Log.d("repo", "created")
             refreshCategories()
             refreshTransactions()
             refreshAdvices()
@@ -294,21 +297,12 @@ class TestRepository @Inject constructor(
                     ).dayOfMonth) to -it.amount
                 }
 
-                Log.e("test", transactions.filter {
-                    (it.amount < 0) && ((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
-                }.map {
-                    ((((LocalDate.now().month.value - it.date.atZone(ZoneId.systemDefault()).month.value) % 12)) * 31 + it.date.atZone(
-                    ZoneId.systemDefault()
-                ).dayOfMonth
-                    )
-                }. toString())
-
                 val expense = List(93) {
                     expenseByDay.getOrDefault(
                         it,
                         0
                     )
-                }.runningReduce { acc, value -> acc + value }.also { Log.e("Expense 3 Months", it.toString()) }
+                }.runningReduce { acc, value -> acc + value }
 
                 Async.Success(Stat(income, expense))
             }

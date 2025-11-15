@@ -24,25 +24,34 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.spbsu_team7.finwise.R
+import com.spbsu_team7.finwise.app.ui.special.ErrorScreen
+import com.spbsu_team7.finwise.app.ui.special.LoadingScreen
 import com.spbsu_team7.finwise.app.ui.theme.FinanceTheme
 import com.spbsu_team7.finwise.app.ui.util.TextWithOption
 
 @Composable
 fun AuthScreen(
-    email: String,
-    password: String,
-    updateEmail: (String) -> Unit,
-    updatePassword: (String) -> Unit,
+    viewModel: AuthViewModel,
     login: () -> Unit
 ) {
-    AuthContent(
-        email = email,
-        password = password,
-        updateEmail = updateEmail,
-        updatePassword = updatePassword,
-        login = login
+    val uiState: AuthUiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    when(uiState) {
+        is AuthUiState.Loading -> LoadingScreen()
+        is AuthUiState.Error -> ErrorScreen((uiState as AuthUiState.Error).error)
+        is AuthUiState.Success -> AuthContent(
+            (uiState as AuthUiState.Success).email,
+            (uiState as AuthUiState.Success).password,
+            viewModel::changeEmail,
+            viewModel::changePassword,
+            {
+                viewModel.login()
+                login()
+            }
         )
+    }
 }
 
 @Preview

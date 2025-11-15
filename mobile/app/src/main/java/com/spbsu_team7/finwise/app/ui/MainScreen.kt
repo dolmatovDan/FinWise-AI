@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(logout: () -> Unit) {
     val pagerState = rememberPagerState(pageCount = { 4 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -57,7 +57,7 @@ fun MainScreen() {
             }
         )
         },
-        topBar = { TopBar(mainViewModel.getState(), mainViewModel.getEvents()) }
+        topBar = { TopBar(mainViewModel.getState(), mainViewModel.getEvents(), logout) }
     ) { paddingValues ->
         HorizontalPager(
             state = pagerState,

@@ -2,8 +2,10 @@ package com.spbsu_team7.finwise.app.ui.topbar
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,7 +35,7 @@ import com.spbsu_team7.finwise.app.Events
 import com.spbsu_team7.finwise.app.UiState
 
 @Composable
-fun TopBar(uiState: UiState, events: Events) {
+fun TopBar(uiState: UiState, events: Events, logout: () -> Unit) {
     val borderColor = MaterialTheme.colorScheme.secondaryContainer
     Surface(
         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -47,34 +49,41 @@ fun TopBar(uiState: UiState, events: Events) {
             )
         }
             .fillMaxWidth()
-            .height(60.dp)
+            .height(70.dp),
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        ) {
+
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.AutoGraph,
-                    contentDescription = "app icon",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(vertical = 10.dp)
-                )
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.titleLarge
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.height(50.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoGraph,
+                        contentDescription = "app icon",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                    )
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+                Row(
+                    modifier = Modifier.height(50.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    TopBarButton({}, Icons.Default.FileDownload, "export")
+                    TopBarButton({}, Icons.Default.Settings, "settings")
+                    TopBarButton(logout, Icons.Default.ExitToApp, "exit account")
+                }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                TopBarButton({}, Icons.Default.FileDownload, "export")
-                TopBarButton({}, Icons.Default.Settings, "settings")
-                TopBarButton({}, Icons.Default.ExitToApp, "exit account")
-            }
-        }
+
     }
 }
 

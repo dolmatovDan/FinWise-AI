@@ -21,7 +21,7 @@ class TestAuthRepository : AuthRepository {
     override fun getRefreshTokenStream(): StateFlow<String?> = refreshToken
 
     override fun login(email: String, password: String) {
-        if (email == "test@email" && password == "123") {
+        if (email == testEmail && password == testPassword) {
             _refreshToken.value = testRefreshToken
             accessToken = testAccessToken
         }

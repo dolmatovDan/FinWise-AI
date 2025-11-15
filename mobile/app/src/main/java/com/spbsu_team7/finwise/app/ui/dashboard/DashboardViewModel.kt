@@ -1,5 +1,6 @@
 package com.spbsu_team7.finwise.app.ui.dashboard
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.SavedStateHandle
@@ -23,6 +24,7 @@ import com.spbsu_team7.finwise.core.model.UserColor
 import com.spbsu_team7.finwise.core.model.UserIcon
 import com.spbsu_team7.finwise.core.repository.Repository
 import com.spbsu_team7.finwise.core.repository.Stat
+import com.spbsu_team7.finwise.core.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -55,11 +57,13 @@ sealed interface DashboardUiState {
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor (
-    private val repository: Repository,
+    private val sessionManager: SessionManager,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val filterType =  savedStateHandle.getStateFlow(TRANSACTIONS_FILTER_SAVED_STATE_KEY, LAST_3MONTHS)
-
+    private val repository: Repository by lazy {
+        sessionManager.getOrCreateRepository()
+    }
     private val filteredIncomeExpense =
         combine(
             repository.lastMonth,
@@ -113,6 +117,12 @@ class DashboardViewModel @Inject constructor (
 
     @Composable
     fun getState() = uiState.collectAsState().value
+
+    override fun onCleared() {
+        super.onCleared()
+        sessionManager.releaseRepository()
+        Log.d("DasboardVM", "destroyed")
+    }
 }
 
 val TRANSACTIONS_FILTER_SAVED_STATE_KEY = "TRANSACTIONS_FILTER_SAVED_STATE_KEY"
