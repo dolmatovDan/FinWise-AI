@@ -1,0 +1,26 @@
+{
+  "question": "Как сократить траты на еду и подписки?",
+  "transactions": [
+    {
+      "date": "2025-01-10T00:00:00Z",
+      "amount": 100000,
+      "type": "income",
+      "category": "salary",
+      "description": "Зарплата"
+    },
+    {
+      "date": "2025-01-12T00:00:00Z",
+      "amount": -20000,
+      "type": "expense",
+      "category": "food",
+      "description": "Магазин"
+    },
+    {
+      "date": "2025-01-15T00:00:00Z",
+      "amount": -3000,
+      "type": "expense",
+      "category": "subscriptions",
+      "description": "Подписки"
+    }
+  ]
+}
