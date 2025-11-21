@@ -37,8 +37,8 @@ class AuthViewModel @Inject constructor (
     private val _password = MutableStateFlow("")
 
     val uiState =
-        combine(authRepository.getRefreshTokenStream(), _email, _password) {
-                refreshToken, email, password ->
+        combine(_email, _password) {
+                email, password ->
                 AuthUiState.Success(email, password)
         }.stateIn(
             scope = viewModelScope,
@@ -46,6 +46,9 @@ class AuthViewModel @Inject constructor (
             initialValue = AuthUiState.Loading
         )
 
+    init {
+        authRepository.logout()
+    }
     fun changeEmail(email: String) {
         _email.value = email
     }
@@ -54,9 +57,7 @@ class AuthViewModel @Inject constructor (
         _password.value = password
     }
 
-    fun login() {
-        authRepository.login(_email.value, _password.value)
-    }
+    fun login() = authRepository.login(_email.value, _password.value)
 
     fun logout() {
         authRepository.logout()

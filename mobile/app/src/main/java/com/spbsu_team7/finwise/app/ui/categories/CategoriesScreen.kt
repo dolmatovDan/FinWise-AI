@@ -1,15 +1,28 @@
 package com.spbsu_team7.finwise.app.ui.categories
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.Events
 import com.spbsu_team7.finwise.app.UiState
@@ -30,13 +43,33 @@ fun CategoriesScreen(
     ) {
         when(uiState) {
             is UiState.Success -> {
+                var expanded by remember { mutableStateOf(false) }
+
                 Column(
                     modifier = Modifier
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 5.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    AddCategorySection(uiState.colors, uiState.icons, events.sendCategory)
-                    CategoriesTable(uiState.categories)
+
+                    AddCategorySection(expanded, { expanded = !expanded } ,uiState.colors, uiState.icons, events.sendCategory)
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        CategoriesTable(uiState.categories)
+                        Button(
+                            onClick = { expanded = true },
+                            shape = CircleShape,
+                            modifier = Modifier.align(Alignment.BottomEnd)
+                                .padding(bottom = 10.dp)
+                                .shadow(4.dp, shape = CircleShape)
+                        ) {
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = "Добавить",
+                                modifier = Modifier.size(30.dp),
+                            )
+                        }
+                    }
                 }
             }
             is UiState.Loading -> {

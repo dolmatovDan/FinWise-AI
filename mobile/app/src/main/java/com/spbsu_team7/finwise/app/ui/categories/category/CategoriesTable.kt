@@ -41,8 +41,6 @@ fun CategoriesTable(categories: List<Category>) {
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Операции", style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 7.dp))
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -64,7 +62,7 @@ fun CategoryRow(category: Category) {
             width = 1.dp,
             color = MaterialTheme.colorScheme.outline,
             shape = MaterialTheme.shapes.medium
-        ).height(40.dp),
+        ).height(50.dp),
         shape = MaterialTheme.shapes.medium,
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {
@@ -77,11 +75,12 @@ fun CategoryRow(category: Category) {
                 imageVector = category.icon,
                 contentDescription = category.name,
                 tint = category.color,
-                modifier = Modifier.padding(vertical = 5.dp).weight(0.2f)
+                modifier = Modifier.padding(vertical = 2.dp).weight(0.2f)
             )
 
             Text(text = category.name,
                 style = MaterialTheme.typography.bodyMedium,
+                fontSize = 18.sp,
                 modifier = Modifier.weight(0.8f)
             )
         }

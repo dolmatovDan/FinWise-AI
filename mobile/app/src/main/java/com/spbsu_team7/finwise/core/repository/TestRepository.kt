@@ -289,11 +289,6 @@ class TestRepository (
                     )
                 }.runningReduce { acc, value -> acc + value }
 
-
-                Log.d("", transactions.filter {
-                    (it.amount < 0) && ((-LocalDate.now().month.value + it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
-                }.toString())
-
                 val expenseByDay = transactions.filter {
                     (it.amount < 0) && ((2 - LocalDate.now().month.value + it.date.atZone(ZoneId.systemDefault()).month.value) % 12 < 3)
                 }.associate {
@@ -343,7 +338,7 @@ class TestRepository (
                 }
 
                 val expense = List(31) {
-                    incomeByDay.getOrDefault(
+                    expenseByDay.getOrDefault(
                         it,
                         0
                     )

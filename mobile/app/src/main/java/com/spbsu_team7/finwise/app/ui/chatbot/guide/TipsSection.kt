@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.spbsu_team7.finwise.R
 import com.spbsu_team7.finwise.app.UiState
 import com.spbsu_team7.finwise.app.ui.theme.ExpenseRed
@@ -83,7 +84,7 @@ fun AdviceRow(advice: Advice) {
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 Row(
@@ -95,7 +96,7 @@ fun AdviceRow(advice: Advice) {
                         imageVector = advice.icon,
                         contentDescription = advice.name,
                         tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(vertical = 10.dp).weight(0.1f)
+                        modifier = Modifier.padding(vertical = 5.dp).weight(0.1f)
                     )
                     Column(
                         modifier = Modifier.weight(0.9f),
@@ -103,7 +104,8 @@ fun AdviceRow(advice: Advice) {
                     ) {
                         Text (
                             text = advice.name,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 16.sp
                         )
                         Row (
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -111,12 +113,14 @@ fun AdviceRow(advice: Advice) {
                             Text(
                                 text = text,
                                 style = MaterialTheme.typography.labelSmall,
+                                fontSize = 14.sp,
                                 color = textColor
                             )
                             if (advice.economy > 0) {
                                 Text(
                                     text = "экономия ${advice.economy}₽",
                                     style = MaterialTheme.typography.labelSmall,
+                                    fontSize = 14.sp,
                                     color = IncomeGreen
                                 )
                             }
@@ -126,7 +130,7 @@ fun AdviceRow(advice: Advice) {
                 Text(
                     modifier = Modifier.weight(1f),
                     text = advice.description,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp),
                 )
             }
         }

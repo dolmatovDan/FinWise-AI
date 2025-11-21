@@ -38,18 +38,12 @@ fun NavigationBar(
             )
         }
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(70.dp)
-                .padding(end = 16.dp, start = 16.dp, bottom = 16.dp),
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.secondaryContainer
-        ) {
+
             Row(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(end = 0.dp, start = 0.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -62,6 +56,6 @@ fun NavigationBar(
                     )
                 }
             }
-        }
+
     }
 }

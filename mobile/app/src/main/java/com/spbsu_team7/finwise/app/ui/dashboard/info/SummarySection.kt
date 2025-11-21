@@ -52,11 +52,7 @@ fun SummarySectionContentLoading(modifier: Modifier = Modifier) {
 @Composable
 fun SummaryCard(title: String, amount: String, color: Color, modifier: Modifier = Modifier) {
     Surface(
-        modifier = modifier.border(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline,
-            shape = MaterialTheme.shapes.medium
-        ),
+        modifier = modifier,
         shape = MaterialTheme.shapes.medium,
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {

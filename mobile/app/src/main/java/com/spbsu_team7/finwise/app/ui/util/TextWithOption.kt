@@ -1,10 +1,13 @@
 package com.spbsu_team7.finwise.app.ui.util
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
@@ -30,38 +33,31 @@ fun TextWithOption(
     placeholder: String,
     valueChange: (String) -> Unit = {},
 ) {
-    var isFocused by remember { mutableStateOf(false) }
-    val focusRequester = remember { FocusRequester() }
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        Text(
-            text = name,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(horizontal = 0.dp)
-        )
+        if (name.isNotEmpty())
+            Text(
+                text = name,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 0.dp)
+            )
         BasicTextField(
             value = value,
             onValueChange = valueChange,
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
-            modifier = Modifier.focusRequester(focusRequester)
-                .onFocusChanged { focusState ->
-                    isFocused = focusState.isFocused
-                },
             decorationBox = { innerTextField ->
                 Surface(
                     modifier = Modifier.padding(horizontal = 0.dp).fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
                     color = MaterialTheme.colorScheme.secondaryContainer,
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    Box(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp).fillMaxHeight(),
+                        contentAlignment = Alignment.CenterStart
                     ) {
-                        if (value.isEmpty() && !isFocused) {
+                        if (value.isEmpty()) {
                             Text(
                                 placeholder,
                                 style = MaterialTheme.typography.bodySmall,

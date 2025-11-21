@@ -7,8 +7,8 @@ import javax.inject.Singleton
 import androidx.core.content.edit
 
 @Singleton
-class TokenManager @Inject constructor (
-    @ApplicationContext private val context: Context
+class TokenManager (
+    context: Context
 ) {
     private val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
 
@@ -25,6 +25,10 @@ class TokenManager @Inject constructor (
 
     fun clearTokens() {
         prefs.edit(commit = true) { clear() }
+    }
+
+    fun refreshTokens() {
+
     }
 
     fun isLoggedIn(): Boolean = getAccessToken() != null

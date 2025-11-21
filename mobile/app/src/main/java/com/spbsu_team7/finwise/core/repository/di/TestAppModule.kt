@@ -1,6 +1,8 @@
 package com.spbsu_team7.finwise.core.repository.di
 
+import android.content.Context
 import com.spbsu_team7.finwise.core.auth.AuthInterceptor
+import com.spbsu_team7.finwise.core.auth.TokenManager
 import com.spbsu_team7.finwise.core.network.ApiService
 import com.spbsu_team7.finwise.core.network.AuthApiService
 import com.spbsu_team7.finwise.core.repository.AuthRepository
@@ -13,6 +15,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
@@ -30,18 +33,17 @@ import javax.inject.Singleton
 object TestAppModule {
 
 
-    @Provides
-    @Singleton
-    fun provideAuthRepository(
-    ): AuthRepository = TestAuthRepository()
+//    @Provides
+//    @Singleton
+//    fun provideAuthRepository(
+//    ): AuthRepository = TestAuthRepository()
 
 
 
     @Provides
     @Singleton
-    fun provideAuthApiService(authInterceptor: AuthInterceptor): AuthApiService {
+    fun provideAuthApiService(): AuthApiService {
         val okHttpClient = OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
             .build()
 
         return Retrofit.Builder()
@@ -67,13 +69,29 @@ object TestAppModule {
             .create(ApiService::class.java)
     }
 
+
     @Provides
     @Singleton
     fun provideSessionManager(repositoryProvider: Provider<Repository>) = SessionManager(repositoryProvider)
 
     @Provides
-    fun provideProductRepository(
+    fun provideUserRepository(
     ): Repository = TestRepository(CoroutineScope(SupervisorJob() + Dispatchers.IO))
+
+    @Provides
+    @Singleton
+    fun provideTokenManager(@ApplicationContext context: Context): TokenManager {
+        return TokenManager(context)
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class TokenModule {
+    @Singleton
+    @Binds
+    abstract fun bindAuthRepository(testAuthRepository: TestAuthRepository): AuthRepository
+
 
 }
 

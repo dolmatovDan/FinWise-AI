@@ -46,10 +46,7 @@ fun AuthScreen(
             (uiState as AuthUiState.Success).password,
             viewModel::changeEmail,
             viewModel::changePassword,
-            {
-                viewModel.login()
-                login()
-            }
+            login
         )
     }
 }
@@ -83,7 +80,6 @@ fun AuthContent(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
                     .padding(horizontal = 16.dp)
                     .border(
                         width = 1.dp,
@@ -95,11 +91,10 @@ fun AuthContent(
             ) {
                 Column (
                     modifier = Modifier.padding(top = 10.dp, start = 10.dp, end = 10.dp, bottom = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     Box (
-                        modifier = Modifier.fillMaxWidth()
-                            .weight(0.2f),
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -111,24 +106,24 @@ fun AuthContent(
                         )
                     }
                     TextWithOption(
-                        name = stringResource(R.string.login),
-                        modifier = Modifier.height(55.dp),
+                        name = "",
+                        modifier = Modifier.height(35.dp),
                         value = email,
-                        placeholder = "",
+                        placeholder = stringResource(R.string.login),
                         valueChange = updateEmail
                     )
                     TextWithOption(
-                        name = stringResource(R.string.password),
-                        modifier = Modifier.height(55.dp),
+                        name = "",
+                        modifier = Modifier.height(35.dp),
                         value = password,
-                        placeholder = "",
+                        placeholder = stringResource(R.string.password),
                         valueChange = updatePassword
                     )
                     Button(
                         onClick = login,
-                        modifier = Modifier.height(30.dp)
+                        modifier = Modifier.height(35.dp).padding(horizontal = 70.dp)
                             .fillMaxWidth(),
-                        shape = MaterialTheme.shapes.small,
+                        shape = MaterialTheme.shapes.medium,
                         colors = ButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,

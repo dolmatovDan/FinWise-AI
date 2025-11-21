@@ -53,11 +53,7 @@ fun ChartsSection(transactions: Async<Stat> ,categoriesExpense: Async<Map<Catego
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
         Surface(
-            modifier = Modifier.fillMaxWidth().border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = MaterialTheme.shapes.medium
-            ).weight(0.4f),
+            modifier = Modifier.fillMaxWidth().weight(0.4f),
             shape = MaterialTheme.shapes.medium,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
@@ -68,11 +64,7 @@ fun ChartsSection(transactions: Async<Stat> ,categoriesExpense: Async<Map<Catego
             }
         }
         Surface(
-            modifier = Modifier.fillMaxWidth().border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = MaterialTheme.shapes.medium
-            ).weight(0.6f),
+            modifier = Modifier.fillMaxWidth().weight(0.6f),
             shape = MaterialTheme.shapes.medium,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {

@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoGraph
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.ExitToApp
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -78,9 +82,9 @@ fun TopBar(uiState: UiState, events: Events, logout: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    TopBarButton({}, Icons.Default.FileDownload, "export")
+                    TopBarButton({}, Icons.Default.Download, "export")
                     TopBarButton({}, Icons.Default.Settings, "settings")
-                    TopBarButton(logout, Icons.Default.ExitToApp, "exit account")
+                    TopBarButton(logout, Icons.Outlined.ExitToApp, "exit account")
                 }
             }
 
@@ -95,11 +99,7 @@ fun TopBarButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = Modifier.border(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline,
-            shape = MaterialTheme.shapes.medium
-        ).height(35.dp).width(35.dp),
+        modifier = Modifier.height(35.dp).width(35.dp),
         contentPadding = PaddingValues(7.dp),
         shape = MaterialTheme.shapes.large,
         colors = ButtonColors(

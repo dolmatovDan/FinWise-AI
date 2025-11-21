@@ -14,11 +14,12 @@ import com.spbsu_team7.finwise.app.ui.auth.AuthUiState
 import com.spbsu_team7.finwise.app.ui.auth.AuthViewModel
 import com.spbsu_team7.finwise.app.ui.special.ErrorScreen
 import com.spbsu_team7.finwise.app.ui.special.LoadingScreen
+import com.spbsu_team7.finwise.core.auth.TokenManager
+import javax.inject.Inject
 
 
 @Composable
 fun Navigation(
-    viewModel: AuthViewModel = hiltViewModel()
 ) {
 
 
@@ -27,16 +28,17 @@ fun Navigation(
     NavHost(navController, startDestination = "auth") {
 
         composable("auth") {
+            val viewModel: AuthViewModel = hiltViewModel()
             AuthScreen(viewModel = viewModel) {
-                navController.navigate("user") {
-                    popUpTo("auth") { inclusive = true }
-                }
+                if (viewModel.login())
+                    navController.navigate("user") {
+                        popUpTo("auth") { inclusive = true }
+                    }
             }
         }
 
         composable("user") {
             MainScreen {
-                viewModel.logout()
                 navController.navigate("auth") {
                     popUpTo("user") { inclusive = true }
                 }

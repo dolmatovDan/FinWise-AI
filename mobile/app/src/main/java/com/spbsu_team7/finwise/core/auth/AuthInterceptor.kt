@@ -11,20 +11,21 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthInterceptor @Inject constructor(
-    private val authRepository: AuthRepository
+    private val tokenManager: TokenManager
 ) : Interceptor
 {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
             .newBuilder()
-            .header("Authorization", "${authRepository.getAccessToken()}")
+            .header("Authorization", "${tokenManager.getAccessToken()}")
             .build()
 
         var response = chain.proceed(request)
 
         if (response.code() == 401) {
             response.close()
-            val newToken = authRepository.getRefreshTokenStream().value
+            tokenManager.refreshTokens()
+            val newToken = tokenManager.getAccessToken()
             return if (newToken != null) {
                 val newRequest = chain.request()
                     .newBuilder()
