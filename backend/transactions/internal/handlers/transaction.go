@@ -319,6 +319,54 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// GetProfit handles POST /api/v1/transactions/profit
+// @Summary Calculate profit over time periods
+// @Description Calculates cumulative profit (income - expense) for the authenticated user across specified time periods with equal intervals
+// @Tags transactions
+// @Accept json
+// @Produce json
+// @Param request body models.ProfitRequest true "Profit calculation parameters"
+// @Success 200 {object} models.ProfitResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Security BearerAuth
+// @Router /api/v1/transactions/profit [post]
+func (h *TransactionHandler) GetProfit(c *gin.Context) {
+	h.logger.Info("handler: get profit request")
+
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		h.logger.Error("handler: user_id not found in context")
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return
+	}
+
+	var req models.ProfitRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Warn("handler: failed to bind JSON", "error", err)
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error:   "Invalid request body",
+			Details: parseValidationErrors(err),
+		})
+		return
+	}
+
+	response, err := h.service.GetProfit(c.Request.Context(), userID, &req)
+	if err != nil {
+		h.logger.Error("handler: failed to calculate profit", "error", err)
+		if errors.Is(err, service.ErrValidation) {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to calculate profit"})
+		return
+	}
+
+	h.logger.Info("handler: profit calculated successfully", "data_points", len(response.Data))
+	c.JSON(http.StatusOK, response)
+}
+
 // parseValidationErrors parses validation errors and returns a map of field errors
 func parseValidationErrors(err error) map[string]string {
 	var ve validator.ValidationErrors

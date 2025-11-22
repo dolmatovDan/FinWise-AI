@@ -225,3 +225,147 @@ func TestServiceValidator(t *testing.T) {
 		require.NotNil(t, err, "list request with filter with zero page size passes successfully")
 	})
 }
+
+func TestGetProfit(t *testing.T) {
+	var logger *slog.Logger = slog.Default()
+
+	t.Run("TestValidProfitRequest", func(t *testing.T) {
+		repo := new(storage.MockRepository)
+
+		// Mock data: profit values for 5 days
+		startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+		mockData := []models.ProfitDataPoint{
+			{Timestamp: startDate, Profit: decimal.NewFromInt(100)},
+			{Timestamp: startDate.Add(24 * time.Hour), Profit: decimal.NewFromInt(0)},
+			{Timestamp: startDate.Add(48 * time.Hour), Profit: decimal.NewFromInt(50)},
+			{Timestamp: startDate.Add(72 * time.Hour), Profit: decimal.NewFromInt(0)},
+			{Timestamp: startDate.Add(96 * time.Hour), Profit: decimal.NewFromInt(30)},
+		}
+
+		repo.On("GetProfitByPeriods", mock.Anything, int64(1), mock.Anything, mock.Anything, int64(86400)).
+			Return(mockData, nil)
+
+		serv := service.NewTransactionService(repo, logger)
+
+		req := &models.ProfitRequest{
+			StartDate: startDate,
+			EndDate:   startDate.Add(5 * 24 * time.Hour),
+			Interval:  86400, // 1 day
+		}
+
+		resp, err := serv.GetProfit(context.Background(), 1, req)
+		require.Nil(t, err, "valid profit request returns an error")
+		require.NotNil(t, resp, "valid profit request returns nil response")
+		require.Equal(t, 5, len(resp.Data), "response should have 5 data points")
+
+		// Check cumulative profit calculation
+		require.Equal(t, "100", resp.Data[0].Profit.String(), "first profit should be 100")
+		require.Equal(t, "100", resp.Data[1].Profit.String(), "second profit should be 100 (cumulative)")
+		require.Equal(t, "150", resp.Data[2].Profit.String(), "third profit should be 150 (100+0+50)")
+		require.Equal(t, "150", resp.Data[3].Profit.String(), "fourth profit should be 150 (cumulative)")
+		require.Equal(t, "180", resp.Data[4].Profit.String(), "fifth profit should be 180 (150+0+30)")
+	})
+
+	t.Run("TestInvalidDateRange", func(t *testing.T) {
+		repo := new(storage.MockRepository)
+		serv := service.NewTransactionService(repo, logger)
+
+		startDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
+		endDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC) // end before start
+
+		req := &models.ProfitRequest{
+			StartDate: startDate,
+			EndDate:   endDate,
+			Interval:  86400,
+		}
+
+		_, err := serv.GetProfit(context.Background(), 1, req)
+		require.NotNil(t, err, "profit request with end_date < start_date should fail")
+	})
+
+	t.Run("TestTooManyPeriods", func(t *testing.T) {
+		repo := new(storage.MockRepository)
+		serv := service.NewTransactionService(repo, logger)
+
+		startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+		endDate := time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC) // 1 year
+
+		req := &models.ProfitRequest{
+			StartDate: startDate,
+			EndDate:   endDate,
+			Interval:  60, // 1 minute intervals = too many periods
+		}
+
+		_, err := serv.GetProfit(context.Background(), 1, req)
+		require.NotNil(t, err, "profit request with >1000 periods should fail")
+		require.Contains(t, err.Error(), "too many periods", "error should mention too many periods")
+	})
+
+	t.Run("TestInvalidInterval", func(t *testing.T) {
+		repo := new(storage.MockRepository)
+		serv := service.NewTransactionService(repo, logger)
+
+		startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+		endDate := time.Date(2025, 1, 10, 0, 0, 0, 0, time.UTC)
+
+		// Test with interval = 0
+		req := &models.ProfitRequest{
+			StartDate: startDate,
+			EndDate:   endDate,
+			Interval:  0,
+		}
+
+		_, err := serv.GetProfit(context.Background(), 1, req)
+		require.NotNil(t, err, "profit request with zero interval should fail")
+
+		// Test with negative interval (caught by validation)
+		req2 := &models.ProfitRequest{
+			StartDate: startDate,
+			EndDate:   endDate,
+			Interval:  -100,
+		}
+
+		_, err = serv.GetProfit(context.Background(), 1, req2)
+		require.NotNil(t, err, "profit request with negative interval should fail")
+	})
+
+	t.Run("TestIntervalTooLarge", func(t *testing.T) {
+		repo := new(storage.MockRepository)
+		serv := service.NewTransactionService(repo, logger)
+
+		startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+		endDate := time.Date(2025, 1, 2, 0, 0, 0, 0, time.UTC) // 1 day range
+
+		req := &models.ProfitRequest{
+			StartDate: startDate,
+			EndDate:   endDate,
+			Interval:  86400 * 10, // 10 days interval for 1 day range
+		}
+
+		_, err := serv.GetProfit(context.Background(), 1, req)
+		require.NotNil(t, err, "profit request with interval > date range should fail")
+		require.Contains(t, err.Error(), "interval too large", "error should mention interval too large")
+	})
+
+	t.Run("TestEmptyDataPoints", func(t *testing.T) {
+		repo := new(storage.MockRepository)
+
+		// Mock returns empty array
+		repo.On("GetProfitByPeriods", mock.Anything, int64(1), mock.Anything, mock.Anything, int64(86400)).
+			Return([]models.ProfitDataPoint{}, nil)
+
+		serv := service.NewTransactionService(repo, logger)
+
+		startDate := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+		req := &models.ProfitRequest{
+			StartDate: startDate,
+			EndDate:   startDate.Add(24 * time.Hour),
+			Interval:  86400,
+		}
+
+		resp, err := serv.GetProfit(context.Background(), 1, req)
+		require.Nil(t, err, "profit request with empty data should not fail")
+		require.NotNil(t, resp, "response should not be nil")
+		require.Equal(t, 0, len(resp.Data), "response should have 0 data points")
+	})
+}

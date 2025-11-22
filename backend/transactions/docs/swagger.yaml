@@ -1,0 +1,343 @@
+basePath: /api/v1
+definitions:
+  handlers.ErrorResponse:
+    properties:
+      details:
+        additionalProperties:
+          type: string
+        type: object
+      error:
+        type: string
+    type: object
+  models.CreateTransactionRequest:
+    properties:
+      amount:
+        type: number
+      category:
+        maxLength: 100
+        minLength: 1
+        type: string
+      description:
+        maxLength: 500
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.TransactionType'
+        enum:
+        - income
+        - expense
+      user_id:
+        type: integer
+    required:
+    - amount
+    - category
+    - type
+    - user_id
+    type: object
+  models.ProfitDataPoint:
+    properties:
+      profit:
+        type: number
+      timestamp:
+        type: string
+    type: object
+  models.ProfitRequest:
+    properties:
+      end_date:
+        type: string
+      interval:
+        description: max 1 year in seconds
+        maximum: 31536000
+        type: integer
+      start_date:
+        type: string
+    required:
+    - end_date
+    - interval
+    - start_date
+    type: object
+  models.ProfitResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.ProfitDataPoint'
+        type: array
+    type: object
+  models.Transaction:
+    properties:
+      amount:
+        type: number
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      type:
+        $ref: '#/definitions/models.TransactionType'
+      updated_at:
+        type: string
+      user_id:
+        description: For future JWT authentication
+        type: integer
+    type: object
+  models.TransactionListResponse:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      transactions:
+        items:
+          $ref: '#/definitions/models.Transaction'
+        type: array
+    type: object
+  models.TransactionType:
+    enum:
+    - income
+    - expense
+    type: string
+    x-enum-varnames:
+    - TransactionTypeIncome
+    - TransactionTypeExpense
+  models.UpdateTransactionRequest:
+    properties:
+      amount:
+        type: number
+      category:
+        maxLength: 100
+        minLength: 1
+        type: string
+      description:
+        maxLength: 500
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.TransactionType'
+        enum:
+        - income
+        - expense
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@finwise.ai
+    name: API Support
+  description: API for managing financial transactions with income/expense tracking
+    and profit calculation
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: FinWise Transactions API
+  version: "1.0"
+paths:
+  /api/v1/transactions:
+    get:
+      parameters:
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - description: Filter by type (income/expense)
+        in: query
+        name: type
+        type: string
+      - description: Filter by category
+        in: query
+        name: category
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10, max: 100)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TransactionListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: List transactions with filtering and pagination
+      tags:
+      - transactions
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Transaction data
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Create a new transaction
+      tags:
+      - transactions
+  /api/v1/transactions/{id}:
+    delete:
+      parameters:
+      - description: Transaction ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Delete a transaction
+      tags:
+      - transactions
+    get:
+      parameters:
+      - description: Transaction ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Get a transaction by ID
+      tags:
+      - transactions
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Transaction ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated transaction data
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Update a transaction
+      tags:
+      - transactions
+  /api/v1/transactions/profit:
+    post:
+      consumes:
+      - application/json
+      description: Calculates cumulative profit (income - expense) for the authenticated
+        user across specified time periods with equal intervals
+      parameters:
+      - description: Profit calculation parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProfitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProfitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Calculate profit over time periods
+      tags:
+      - transactions
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
