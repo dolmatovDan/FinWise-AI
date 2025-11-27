@@ -27,7 +27,7 @@ func NewHTTPMlLauncher(baseURL string) *HTTPMlLauncher {
 		baseURL = "http://localhost:8000"
 	}
 
-	timeout := 30 * time.Second
+	timeout := 1000 * time.Second
 	if ts := os.Getenv("ML_HTTP_TIMEOUT"); ts != "" {
 		if d, err := time.ParseDuration(ts); err == nil {
 			timeout = d
