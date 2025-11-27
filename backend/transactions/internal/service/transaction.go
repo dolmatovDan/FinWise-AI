@@ -113,3 +113,47 @@ func (s *TransactionService) Delete(ctx context.Context, id uuid.UUID) error {
 	s.logger.Info("service: transaction deleted successfully", "id", id)
 	return nil
 }
+
+// GetProfit calculates profit (income - expense) over time periods with cumulative fill
+func (s *TransactionService) GetProfit(ctx context.Context, userID int64, req *models.ProfitRequest) (*models.ProfitResponse, error) {
+	s.logger.Info("service: calculating profit", "user_id", userID, "start_date", req.StartDate, "end_date", req.EndDate, "interval", req.Interval)
+
+	// Validate request
+	if err := s.validator.Struct(req); err != nil {
+		s.logger.Warn("service: validation failed", "error", err)
+		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
+	}
+
+	// Additional validation: check reasonable number of periods
+	duration := req.EndDate.Sub(req.StartDate).Seconds()
+	numPeriods := int(duration / float64(req.Interval))
+	if numPeriods > 1000 {
+		s.logger.Warn("service: too many periods requested", "num_periods", numPeriods)
+		return nil, fmt.Errorf("%w: too many periods (max 1000, requested %d)", ErrValidation, numPeriods)
+	}
+	if numPeriods < 1 {
+		s.logger.Warn("service: invalid period count", "num_periods", numPeriods)
+		return nil, fmt.Errorf("%w: interval too large for the given date range", ErrValidation)
+	}
+
+	// Get profit data from repository
+	dataPoints, err := s.repo.GetProfitByPeriods(ctx, userID, req.StartDate, req.EndDate, req.Interval)
+	if err != nil {
+		s.logger.Error("service: failed to get profit data", "error", err)
+		return nil, fmt.Errorf("failed to get profit data: %w", err)
+	}
+
+	// Fill empty periods with cumulative profit (previous value)
+	if len(dataPoints) > 0 {
+		cumulativeProfit := dataPoints[0].Profit
+		for i := 1; i < len(dataPoints); i++ {
+			cumulativeProfit = cumulativeProfit.Add(dataPoints[i].Profit)
+			dataPoints[i].Profit = cumulativeProfit
+		}
+	}
+
+	s.logger.Info("service: profit calculated successfully", "data_points", len(dataPoints))
+	return &models.ProfitResponse{
+		Data: dataPoints,
+	}, nil
+}
