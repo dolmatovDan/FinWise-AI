@@ -107,6 +107,51 @@ export const mockTransactions: Transaction[] = [
     date: new Date('2025-10-10'),
     userId: 'user1',
   },
+  {
+  id: '34',
+  amount: 3800,
+  type: 'expense',
+  categoryId: '4',
+  description: 'Продукты',
+  date: new Date('2025-11-14'),
+  userId: 'user1',
+},
+{
+  id: '35',
+  amount: 900,
+  type: 'expense',
+  categoryId: '6',
+  description: 'Кинотеатр',
+  date: new Date('2025-11-16'),
+  userId: 'user1',
+},
+{
+  id: '36',
+  amount: 2100,
+  type: 'expense',
+  categoryId: '7',
+  description: 'Медицинская консультация',
+  date: new Date('2025-11-25'),
+  userId: 'user1',
+},
+{
+  id: '37',
+  amount: 6500,
+  type: 'expense',
+  categoryId: '6',
+  description: 'Концерт',
+  date: new Date('2025-11-28'),
+  userId: 'user1',
+},
+{
+  id: '38',
+  amount: 2900,
+  type: 'expense',
+  categoryId: '4',
+  description: 'Продукты',
+  date: new Date('2025-11-29'),
+  userId: 'user1',
+},
 ];
 
 export const mockAIRecommendations: AIRecommendation[] = [
@@ -141,4 +186,5 @@ export const mockAIRecommendations: AIRecommendation[] = [
     category: 'investment',
     priority: 'medium',
   },
+
 ];
