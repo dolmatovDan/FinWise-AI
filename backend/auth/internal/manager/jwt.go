@@ -151,12 +151,16 @@ func loadPrivateKey(path string) (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("failed to decode PEM block containing private key")
 	}
 
-	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
+	privateKey1, ok := privateKey.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("failed to parse private key: not an RSA key format")
+	}
 
-	return privateKey, nil
+	return privateKey1, nil
 }
 
 // loadPublicKey loads RSA public key from file
