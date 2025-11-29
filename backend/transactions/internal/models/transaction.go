@@ -60,3 +60,21 @@ type TransactionFilter struct {
 	Page     int              `form:"page" validate:"omitempty,gte=1"`
 	PageSize int              `form:"page_size" validate:"omitempty,gte=1,lte=100"`
 }
+
+// ProfitRequest represents request to calculate profit over time periods
+type ProfitRequest struct {
+	StartDate time.Time `json:"start_date" binding:"required" validate:"required"`
+	EndDate   time.Time `json:"end_date" binding:"required" validate:"required,gtfield=StartDate"`
+	Interval  int64     `json:"interval" binding:"required" validate:"required,gt=0,lte=31536000"` // max 1 year in seconds
+}
+
+// ProfitDataPoint represents a single profit data point for a specific timestamp
+type ProfitDataPoint struct {
+	Timestamp time.Time       `json:"timestamp"`
+	Profit    decimal.Decimal `json:"profit"`
+}
+
+// ProfitResponse represents response with profit data over time
+type ProfitResponse struct {
+	Data []ProfitDataPoint `json:"data"`
+}

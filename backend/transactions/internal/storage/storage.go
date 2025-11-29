@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/google/uuid"
@@ -23,4 +24,7 @@ type TransactionRepository interface {
 
 	// Delete deletes a transaction
 	Delete(ctx context.Context, id uuid.UUID) error
+
+	// GetProfitByPeriods calculates profit (income - expense) aggregated by time periods
+	GetProfitByPeriods(ctx context.Context, userID int64, startDate, endDate time.Time, intervalSeconds int64) ([]models.ProfitDataPoint, error)
 }

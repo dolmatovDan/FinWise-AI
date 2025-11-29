@@ -15,6 +15,25 @@ import (
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/storage/postgres"
 )
 
+// @title FinWise Transactions API
+// @version 1.0
+// @description API for managing financial transactions with income/expense tracking and profit calculation
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@finwise.ai
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 func main() {
 	// Load configuration
 	cfg, err := config.Load()

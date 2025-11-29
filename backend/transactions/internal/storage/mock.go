@@ -2,10 +2,11 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/google/uuid"
-    "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/mock"
 )
 
 // A fake TransactionRepository that returns placeholder values
@@ -57,4 +58,14 @@ func (r *MockRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 func (r *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := r.Called(ctx, id)
 	return args.Error(0)
+}
+
+func (r *MockRepository) GetProfitByPeriods(ctx context.Context, userID int64, startDate, endDate time.Time, intervalSeconds int64) ([]models.ProfitDataPoint, error) {
+	args := r.Called(ctx, userID, startDate, endDate, intervalSeconds)
+	err := args.Error(1)
+	if data, ok := args.Get(0).([]models.ProfitDataPoint); ok {
+		return data, err
+	} else {
+		return nil, err
+	}
 }

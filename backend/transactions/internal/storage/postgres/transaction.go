@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/storage"
@@ -288,4 +289,62 @@ func (ts *TransactionStorage) Delete(ctx context.Context, id uuid.UUID) error {
 
 	ts.storage.logger.Info("transaction deleted successfully", "id", id)
 	return nil
+}
+
+// GetProfitByPeriods calculates profit (income - expense) aggregated by time periods
+func (ts *TransactionStorage) GetProfitByPeriods(ctx context.Context, userID int64, startDate, endDate time.Time, intervalSeconds int64) ([]models.ProfitDataPoint, error) {
+	ts.storage.logger.Info("calculating profit by periods", "user_id", userID, "start_date", startDate, "end_date", endDate, "interval", intervalSeconds)
+
+	query := `
+		WITH time_series AS (
+			SELECT generate_series(
+				$2::timestamptz,
+				$3::timestamptz,
+				make_interval(secs => $4::int)
+			) AS period_start
+		),
+		aggregated AS (
+			SELECT
+				ts.period_start,
+				COALESCE(
+					SUM(CASE WHEN t.type = 'income' THEN t.amount ELSE 0 END) -
+					SUM(CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END),
+					0
+				) AS profit
+			FROM time_series ts
+			LEFT JOIN transaction t ON
+				t.user_id = $1
+				AND t.created_at >= ts.period_start
+				AND t.created_at < ts.period_start + make_interval(secs => $4::int)
+			GROUP BY ts.period_start
+			ORDER BY ts.period_start
+		)
+		SELECT period_start, profit FROM aggregated
+	`
+
+	rows, err := ts.storage.pool.Query(ctx, query, userID, startDate, endDate, intervalSeconds)
+	if err != nil {
+		ts.storage.logger.Error("failed to calculate profit by periods", "error", err)
+		return nil, fmt.Errorf("failed to calculate profit by periods: %w", err)
+	}
+	defer rows.Close()
+
+	var dataPoints []models.ProfitDataPoint
+	for rows.Next() {
+		var point models.ProfitDataPoint
+		err := rows.Scan(&point.Timestamp, &point.Profit)
+		if err != nil {
+			ts.storage.logger.Error("failed to scan profit data point", "error", err)
+			return nil, fmt.Errorf("failed to scan profit data point: %w", err)
+		}
+		dataPoints = append(dataPoints, point)
+	}
+
+	if err := rows.Err(); err != nil {
+		ts.storage.logger.Error("error iterating profit data points", "error", err)
+		return nil, fmt.Errorf("error iterating profit data points: %w", err)
+	}
+
+	ts.storage.logger.Info("profit calculated successfully", "data_points_count", len(dataPoints))
+	return dataPoints, nil
 }
