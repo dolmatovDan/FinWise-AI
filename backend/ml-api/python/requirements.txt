@@ -1,8 +1,0 @@
-numpy
-pandas
-torch
-transformers==4.57.1
-statsmodels==0.14.5
-prophet==1.2.1
-pillow
-plotly==6.3.1

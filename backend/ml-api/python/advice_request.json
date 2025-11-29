@@ -1,0 +1,33 @@
+﻿{
+  "question": "Как сократить расходы, не сильно ухудшая качество жизни?",
+  "transactions": [
+    {
+      "date": "2025-11-01T00:00:00Z",
+      "amount": 120000,
+      "type": "income",
+      "category": "Зарплата",
+      "description": "Зарплата за ноябрь"
+    },
+    {
+      "date": "2025-11-02T00:00:00Z",
+      "amount": 35000,
+      "type": "expense",
+      "category": "Еда",
+      "description": "Продукты и кафе"
+    },
+    {
+      "date": "2025-11-03T00:00:00Z",
+      "amount": 5000,
+      "type": "expense",
+      "category": "Подписки",
+      "description": "Spotify, Netflix"
+    },
+    {
+      "date": "2025-11-04T00:00:00Z",
+      "amount": 8000,
+      "type": "expense",
+      "category": "Такси",
+      "description": "Поездки по городу"
+    }
+  ]
+}

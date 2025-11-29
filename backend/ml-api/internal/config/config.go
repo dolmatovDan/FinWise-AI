@@ -32,10 +32,10 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		Server: ServerConfig{
 			Host:            getEnv("SERVER_HOST", "0.0.0.0"),
-			Port:            getEnv("SERVER_PORT_ML", "8081"),
-			ReadTimeout:     getDurationEnv("SERVER_READ_TIMEOUT", 10*time.Second),
-			WriteTimeout:    getDurationEnv("SERVER_WRITE_TIMEOUT", 10*time.Second),
-			ShutdownTimeout: getDurationEnv("SERVER_SHUTDOWN_TIMEOUT", 5*time.Second),
+			Port:            getEnv("SERVER_PORT", "8081"),
+			ReadTimeout:     getDurationEnv("SERVER_READ_TIMEOUT", 1000*time.Second),
+			WriteTimeout:    getDurationEnv("SERVER_WRITE_TIMEOUT", 1000*time.Second),
+			ShutdownTimeout: getDurationEnv("SERVER_SHUTDOWN_TIMEOUT", 500*time.Second),
 		},
 		Logger: LoggerConfig{
 			Level:  getEnv("LOG_LEVEL", "info"),

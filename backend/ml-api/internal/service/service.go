@@ -17,7 +17,7 @@ type MlApiService struct {
 	validator *validator.Validate
 }
 
-// This is a stop sign --> [STOP]
+// NewMlApiService создает сервис и втыкает туда лаунчер (HTTP на HF)
 func NewMlApiService(logger *slog.Logger) *MlApiService {
 	return &MlApiService{
 		launcher:  mlLauncher.DefaultMlLauncher(),
@@ -78,4 +78,20 @@ func (s *MlApiService) Advice(ctx context.Context, req *models.AdviceRequest) (*
 	return out, nil
 }
 
-// TODO: receipt scan request
+// ScanReceipt — прокидываем путь к файлу чека в ML-сервис
+func (s *MlApiService) ScanReceipt(ctx context.Context, path models.ReceiptFilePath) (*models.ReceiptScanResponse, error) {
+	s.logger.Info("service: scan receipt request", "path", path)
+
+	if path == "" {
+		s.logger.Warn("service: empty receipt path")
+		return nil, fmt.Errorf("%w: empty receipt path", ErrValidation)
+	}
+
+	out, err := s.launcher.RunReceiptScan(path) // ВАЖНО: БЕЗ string(path)
+	if err != nil {
+		s.logger.Error("service: receipt scan processing failed", "error", err)
+		return nil, fmt.Errorf("%w: %w", ErrMl, err)
+	}
+
+	return out, nil
+}
