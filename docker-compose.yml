@@ -145,8 +145,29 @@ services:
     networks:
       - finwise-network
 
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: finwise-prometheus
+    restart: unless-stopped
+    depends_on:
+      - auth
+      - transactions
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - finwise-network
+
 volumes:
   postgres_data:
+    driver: local
+  prometheus_data:
     driver: local
 
 networks:

@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth:8082']
+        labels:
+          service: 'auth'
+
+  - job_name: 'transactions-service'
+    static_configs:
+      - targets: ['transactions:8080']
+        labels:
+          service: 'transactions'
