@@ -1,0 +1,76 @@
+# Database migration Job for Transactions service
+# This Job depends on migrate-auth completing successfully
+#
+# See migrate-auth.yaml for migration options
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-transactions
+  namespace: finwise
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:16-alpine
+        command:
+        - sh
+        - -c
+        - |
+          until pg_isready -h postgres -U postgres; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+        env:
+        - name: PGHOST
+          value: postgres
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USER
+      - name: wait-for-auth-migration
+        image: bitnami/kubectl:latest
+        command:
+        - sh
+        - -c
+        - |
+          until kubectl wait --for=condition=complete --timeout=300s job/migrate-auth -n finwise; do
+            echo "Waiting for auth migration to complete..."
+            sleep 5
+          done
+      containers:
+      - name: migrate
+        image: migrate/migrate:latest
+        args:
+        - "-path"
+        - "/migrations"
+        - "-database"
+        - "postgres://$(DB_USER):$(DB_PASSWORD)@postgres:5432/$(DB_NAME)?sslmode=disable"
+        - "up"
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: DB_NAME
+        # TODO: Mount migrations volume
+        # volumeMounts:
+        # - name: migrations
+        #   mountPath: /migrations
+      # volumes:
+      # - name: migrations
+      #   configMap:
+      #     name: transactions-migrations

@@ -1,0 +1,73 @@
+# Database migration Job for Auth service
+# This Job uses the migrate/migrate image and requires migrations to be available
+#
+# OPTION 1: Build custom image with migrations:
+#   FROM migrate/migrate:latest
+#   COPY backend/auth/migrations /migrations
+#   Then update image below to your custom image
+#
+# OPTION 2: Use ConfigMap (for small migrations):
+#   kubectl create configmap auth-migrations --from-file=backend/auth/migrations -n finwise
+#   Then uncomment volumeMounts and volumes sections below
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-auth
+  namespace: finwise
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:16-alpine
+        command:
+        - sh
+        - -c
+        - |
+          until pg_isready -h postgres -U postgres; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+        env:
+        - name: PGHOST
+          value: postgres
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USER
+      containers:
+      - name: migrate
+        image: migrate/migrate:latest
+        args:
+        - "-path"
+        - "/migrations"
+        - "-database"
+        - "postgres://$(DB_USER):$(DB_PASSWORD)@postgres:5432/$(DB_NAME)?sslmode=disable"
+        - "up"
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: DB_NAME
+        # TODO: Mount migrations volume
+        # volumeMounts:
+        # - name: migrations
+        #   mountPath: /migrations
+      # volumes:
+      # - name: migrations
+      #   configMap:
+      #     name: auth-migrations
