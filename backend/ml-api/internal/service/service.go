@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"path/filepath"
+	"strings"
+	"unicode/utf8"
 
 	mlLauncher "github.com/dolmatovDan/FinWise-AI/backend/ml-api/internal/ml-launcher"
 	"github.com/dolmatovDan/FinWise-AI/backend/ml-api/internal/models"
@@ -30,7 +33,6 @@ func NewMlApiService(logger *slog.Logger) *MlApiService {
 func (s *MlApiService) Forecast(ctx context.Context, req *models.ForecastRequest) (*models.ForecastResponse, error) {
 	s.logger.Info("service: forecast request", "granularity", req.Granularity, "steps", req.Steps, "model", req.Model)
 
-	// Validate request
 	if err := s.validator.Struct(req); err != nil {
 		s.logger.Warn("service: validation failed", "error", err)
 		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
@@ -52,11 +54,32 @@ func (s *MlApiService) Forecast(ctx context.Context, req *models.ForecastRequest
 	return out, nil
 }
 
+func normalizeSentenceSmart(s string) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return s
+	}
+
+	lastRune, _ := utf8.DecodeLastRuneInString(s)
+	if lastRune == '.' || lastRune == '!' || lastRune == '?' || lastRune == '…' {
+		return s
+	}
+
+	lastDot := strings.LastIndex(s, ".")
+	if lastDot != -1 {
+		trimmed := strings.TrimSpace(s[:lastDot+1])
+		if trimmed != "" {
+			return trimmed
+		}
+	}
+
+	return s + "."
+}
+
 // Request an advice
 func (s *MlApiService) Advice(ctx context.Context, req *models.AdviceRequest) (*models.AdviceResponse, error) {
 	s.logger.Info("service: advice request", "question", req.Question)
 
-	// Validate request
 	if err := s.validator.Struct(req); err != nil {
 		s.logger.Warn("service: validation failed", "error", err)
 		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
@@ -75,6 +98,7 @@ func (s *MlApiService) Advice(ctx context.Context, req *models.AdviceRequest) (*
 		return nil, fmt.Errorf("%w: %w", ErrMl, err)
 	}
 
+	out.Advice = normalizeSentenceSmart(out.Advice)
 	return out, nil
 }
 
@@ -87,7 +111,15 @@ func (s *MlApiService) ScanReceipt(ctx context.Context, path models.ReceiptFileP
 		return nil, fmt.Errorf("%w: empty receipt path", ErrValidation)
 	}
 
-	out, err := s.launcher.RunReceiptScan(path) // ВАЖНО: БЕЗ string(path)
+	ext := strings.ToLower(filepath.Ext(string(path)))
+	switch ext {
+	case ".jpg", ".jpeg", ".png", ".webp":
+	default:
+		s.logger.Warn("service: unsupported receipt extension", "ext", ext)
+		return nil, fmt.Errorf("%w: unsupported receipt extension %s", ErrValidation, ext)
+	}
+
+	out, err := s.launcher.RunReceiptScan(path)
 	if err != nil {
 		s.logger.Error("service: receipt scan processing failed", "error", err)
 		return nil, fmt.Errorf("%w: %w", ErrMl, err)
