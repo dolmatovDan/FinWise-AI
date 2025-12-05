@@ -4,12 +4,18 @@ import (
 	"log/slog"
 
 	"github.com/dolmatovDan/FinWise-AI/backend/auth/internal/manager"
+	"github.com/dolmatovDan/FinWise-AI/backend/auth/internal/middleware"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // SetupRouter sets up the HTTP router with all routes
 func SetupRouter(authManager *manager.AuthManager, logger *slog.Logger) *gin.Engine {
 	router := gin.Default()
+
+	router.Use(middleware.PrometheusMiddleware())
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})

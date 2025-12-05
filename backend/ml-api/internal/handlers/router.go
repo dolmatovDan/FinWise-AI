@@ -25,6 +25,7 @@ func SetupRouter(mlApiService *service.MlApiService, logger *slog.Logger) *gin.E
 		{
 			mlApi.POST("/forecast", mlApiHandler.Forecast)
 			mlApi.POST("/advice", mlApiHandler.Advice)
+			mlApi.POST("/receipt/scan", mlApiHandler.ReceiptScan) // добавили эндпоинт скана чека
 		}
 	}
 

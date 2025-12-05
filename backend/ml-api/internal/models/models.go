@@ -42,5 +42,7 @@ type AdviceResponse struct {
 type ReceiptFilePath string
 
 type ReceiptScanResponse struct {
-	Total decimal.Decimal `json:"total"`
+	Total       decimal.Decimal `json:"total"`
+	Category    string          `json:"category_name,omitempty"`
+	Description string          `json:"description,omitempty"`
 }
