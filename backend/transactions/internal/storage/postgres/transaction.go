@@ -32,24 +32,29 @@ func NewTransactionStorage(storage *Storage) *TransactionStorage {
 func (ts *TransactionStorage) Create(ctx context.Context, req *models.CreateTransactionRequest) (*models.Transaction, error) {
 	ts.storage.logger.Info("creating new transaction", "user_id", req.UserID, "type", req.Type)
 
+	if _, err := getCategoryById(ts, ctx, req.CategoryID); err != nil {
+		ts.storage.logger.Error("failed to create transaction", "error", err)
+		return nil, fmt.Errorf("failed to create transaction: %w", err)
+	}
+
 	query := `
-		INSERT INTO transaction (user_id, amount, category, description, type)
+		INSERT INTO transaction (user_id, amount, category_id, description, type)
 		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, user_id, amount, category, description, type, created_at, updated_at
+		RETURNING id, user_id, amount, category_id, description, type, created_at, updated_at
 	`
 
 	var transaction models.Transaction
 	err := ts.storage.pool.QueryRow(ctx, query,
 		req.UserID,
 		req.Amount,
-		req.Category,
+		req.CategoryID,
 		req.Description,
 		req.Type,
 	).Scan(
 		&transaction.ID,
 		&transaction.UserID,
 		&transaction.Amount,
-		&transaction.Category,
+		&transaction.CategoryID,
 		&transaction.Description,
 		&transaction.Type,
 		&transaction.CreatedAt,
@@ -70,7 +75,7 @@ func (ts *TransactionStorage) GetByID(ctx context.Context, id uuid.UUID) (*model
 	ts.storage.logger.Info("fetching transaction by id", "id", id)
 
 	query := `
-		SELECT id, user_id, amount, category, description, type, created_at, updated_at
+		SELECT id, user_id, amount, category_id, description, type, created_at, updated_at
 		FROM transaction
 		WHERE id = $1
 	`
@@ -80,7 +85,7 @@ func (ts *TransactionStorage) GetByID(ctx context.Context, id uuid.UUID) (*model
 		&transaction.ID,
 		&transaction.UserID,
 		&transaction.Amount,
-		&transaction.Category,
+		&transaction.CategoryID,
 		&transaction.Description,
 		&transaction.Type,
 		&transaction.CreatedAt,
@@ -102,6 +107,13 @@ func (ts *TransactionStorage) GetByID(ctx context.Context, id uuid.UUID) (*model
 // List retrieves transactions with filtering and pagination
 func (ts *TransactionStorage) List(ctx context.Context, filter *models.TransactionFilter) (*models.TransactionListResponse, error) {
 	ts.storage.logger.Info("fetching transactions list", "filter", filter)
+
+	if filter.CategoryID != nil {
+		if _, err := getCategoryById(ts, ctx, *filter.CategoryID); err != nil {
+			ts.storage.logger.Error("failed to fetch transactions list", "error", err)
+			return nil, fmt.Errorf("failed to fetch transactions list: %w", err)
+		}
+	}
 
 	// Set default values
 	if filter.Page == 0 {
@@ -128,9 +140,9 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 		argCounter++
 	}
 
-	if filter.Category != nil {
-		whereConditions = append(whereConditions, fmt.Sprintf("category = $%d", argCounter))
-		args = append(args, *filter.Category)
+	if filter.CategoryID != nil {
+		whereConditions = append(whereConditions, fmt.Sprintf("category_id = $%d", argCounter))
+		args = append(args, *filter.CategoryID)
 		argCounter++
 	}
 
@@ -150,7 +162,7 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 	args = append(args, filter.PageSize, offset)
 
 	query := fmt.Sprintf(`
-		SELECT id, user_id, amount, category, description, type, created_at, updated_at
+		SELECT id, user_id, amount, category_id, description, type, created_at, updated_at
 		FROM transaction
 		WHERE %s
 		ORDER BY created_at DESC
@@ -171,7 +183,7 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 			&transaction.ID,
 			&transaction.UserID,
 			&transaction.Amount,
-			&transaction.Category,
+			&transaction.CategoryID,
 			&transaction.Description,
 			&transaction.Type,
 			&transaction.CreatedAt,
@@ -203,6 +215,13 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *models.UpdateTransactionRequest) (*models.Transaction, error) {
 	ts.storage.logger.Info("updating transaction", "id", id)
 
+	if req.CategoryID != nil {
+		if _, err := getCategoryById(ts, ctx, *req.CategoryID); err != nil {
+			ts.storage.logger.Error("failed to create transaction", "error", err)
+			return nil, fmt.Errorf("failed to create transaction: %w", err)
+		}
+	}
+
 	// Build SET clause dynamically based on provided fields
 	setClauses := []string{}
 	args := []interface{}{}
@@ -214,9 +233,9 @@ func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *mod
 		argCounter++
 	}
 
-	if req.Category != nil {
-		setClauses = append(setClauses, fmt.Sprintf("category = $%d", argCounter))
-		args = append(args, *req.Category)
+	if req.CategoryID != nil {
+		setClauses = append(setClauses, fmt.Sprintf("category_id = $%d", argCounter))
+		args = append(args, *req.CategoryID)
 		argCounter++
 	}
 
@@ -242,7 +261,7 @@ func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *mod
 		UPDATE transaction
 		SET %s
 		WHERE id = $%d
-		RETURNING id, user_id, amount, category, description, type, created_at, updated_at
+		RETURNING id, user_id, amount, category_id, description, type, created_at, updated_at
 	`, strings.Join(setClauses, ", "), argCounter)
 
 	var transaction models.Transaction
@@ -250,7 +269,7 @@ func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *mod
 		&transaction.ID,
 		&transaction.UserID,
 		&transaction.Amount,
-		&transaction.Category,
+		&transaction.CategoryID,
 		&transaction.Description,
 		&transaction.Type,
 		&transaction.CreatedAt,
@@ -289,6 +308,43 @@ func (ts *TransactionStorage) Delete(ctx context.Context, id uuid.UUID) error {
 
 	ts.storage.logger.Info("transaction deleted successfully", "id", id)
 	return nil
+}
+
+func (ts *TransactionStorage) GetCategories(ctx context.Context) (*[]models.Category, error) {
+	ts.storage.logger.Info("fetching category list")
+
+	query := `SELECT * FROM category`
+
+	rows, err := ts.storage.pool.Query(ctx, query)
+	if err != nil {
+		ts.storage.logger.Error("failed to query categories: %w", "error", err)
+		return nil, fmt.Errorf("failed to query categories: %w", err)
+	}
+	defer rows.Close()
+
+	categories := []models.Category{}
+	for rows.Next() {
+		var category models.Category
+		err := rows.Scan(
+			&category.ID,
+			&category.Name,
+			&category.Description,
+		)
+		if err != nil {
+			ts.storage.logger.Error("failed to scan category", "error", err)
+			return nil, fmt.Errorf("failed to scan category: %w", err)
+		}
+		categories = append(categories, category)
+	}
+
+	if err := rows.Err(); err != nil {
+		ts.storage.logger.Error("error iterating categories", "error", err)
+		return nil, fmt.Errorf("error iterating categories: %w", err)
+	}
+
+	ts.storage.logger.Info("categories fetched successfully", "count", len(categories))
+
+	return &categories, nil
 }
 
 // GetProfitByPeriods calculates profit (income - expense) aggregated by time periods
@@ -347,4 +403,31 @@ func (ts *TransactionStorage) GetProfitByPeriods(ctx context.Context, userID int
 
 	ts.storage.logger.Info("profit calculated successfully", "data_points_count", len(dataPoints))
 	return dataPoints, nil
+}
+
+func getCategoryById(ts *TransactionStorage, ctx context.Context, categoryID int64) (*models.Category, error) {
+	ts.storage.logger.Info("attempting to fetch category by ID", "category_id", categoryID)
+
+	query := `SELECT * FROM category WHERE id = $1`
+
+	rows, err := ts.storage.pool.Query(ctx, query, categoryID)
+	if err != nil {
+		ts.storage.logger.Error("failed to fetch category", "error", err)
+		return nil, fmt.Errorf("failed to fetch category: %w", err)
+	}
+	defer rows.Close()
+
+	var category models.Category
+	if rows.Next() {
+		if err := rows.Scan(&category.ID, &category.Name, &category.Description); err != nil {
+			ts.storage.logger.Error("failed to scan category", "error", err)
+			return nil, fmt.Errorf("failed to scan category: %w", err)
+		}
+	} else {
+		ts.storage.logger.Error("category not found", "category_id", categoryID)
+		return nil, fmt.Errorf("category not found: %d", categoryID)
+	}
+
+	ts.storage.logger.Info("category fetched successfully", "category_id", categoryID)
+	return &category, nil
 }

@@ -114,6 +114,18 @@ func (s *TransactionService) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+func (s *TransactionService) GetCategories(ctx context.Context) (*[]models.Category, error) {
+	s.logger.Info("service: fetching categories list")
+
+	categories, err := s.repo.GetCategories(ctx)
+	if err != nil {
+		s.logger.Error("service: failed to fetch categories list", "error", err)
+		return nil, fmt.Errorf("failed to fetch categories list: %w", err)
+	}
+
+	return categories, nil
+}
+
 // GetProfit calculates profit (income - expense) over time periods with cumulative fill
 func (s *TransactionService) GetProfit(ctx context.Context, userID int64, req *models.ProfitRequest) (*models.ProfitResponse, error) {
 	s.logger.Info("service: calculating profit", "user_id", userID, "start_date", req.StartDate, "end_date", req.EndDate, "interval", req.Interval)

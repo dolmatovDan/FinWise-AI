@@ -6,7 +6,7 @@ DROP FUNCTION IF EXISTS update_updated_at_column();
 
 -- Drop indexes
 DROP INDEX IF EXISTS idx_transaction_created_at;
-DROP INDEX IF EXISTS idx_transaction_category;
+DROP INDEX IF EXISTS idx_transaction_category_id;
 DROP INDEX IF EXISTS idx_transaction_user_id;
 
 -- Drop table

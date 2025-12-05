@@ -15,12 +15,19 @@ const (
 	TransactionTypeExpense TransactionType = "expense"
 )
 
+// Category represents a transaction category
+type Category struct {
+	ID          int64  `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
+}
+
 // Transaction represents a financial transaction
 type Transaction struct {
 	ID          uuid.UUID       `json:"id" db:"id"`
 	UserID      int64           `json:"user_id" db:"user_id"` // For future JWT authentication
 	Amount      decimal.Decimal `json:"amount" db:"amount"`
-	Category    string          `json:"category" db:"category"`
+	CategoryID  int64           `json:"category_id" db:"category_id"`
 	Description string          `json:"description" db:"description"`
 	Type        TransactionType `json:"type" db:"type"`
 	CreatedAt   time.Time       `json:"created_at" db:"created_at"`
@@ -31,7 +38,7 @@ type Transaction struct {
 type CreateTransactionRequest struct {
 	UserID      int64           `json:"user_id" binding:"required" validate:"required,gt=0"`
 	Amount      decimal.Decimal `json:"amount" binding:"required"`
-	Category    string          `json:"category" binding:"required" validate:"required,min=1,max=100"`
+	CategoryID  int64           `json:"category_id" binding:"required" validate:"required"`
 	Description string          `json:"description" validate:"omitempty,max=500"`
 	Type        TransactionType `json:"type" binding:"required,oneof=income expense" validate:"required,oneof=income expense"`
 }
@@ -39,7 +46,7 @@ type CreateTransactionRequest struct {
 // UpdateTransactionRequest represents request to update a transaction
 type UpdateTransactionRequest struct {
 	Amount      *decimal.Decimal `json:"amount,omitempty"`
-	Category    *string          `json:"category,omitempty" validate:"omitempty,min=1,max=100"`
+	CategoryID  *int64           `json:"category_id,omitempty" validate:"omitempty"`
 	Description *string          `json:"description,omitempty" validate:"omitempty,max=500"`
 	Type        *TransactionType `json:"type,omitempty" validate:"omitempty,oneof=income expense"`
 }
@@ -54,11 +61,11 @@ type TransactionListResponse struct {
 
 // TransactionFilter represents filters for querying transactions
 type TransactionFilter struct {
-	UserID   int64            `form:"user_id" validate:"omitempty,gte=0"`
-	Type     *TransactionType `form:"type" validate:"omitempty,oneof=income expense"`
-	Category *string          `form:"category" validate:"omitempty,min=1,max=100"`
-	Page     int              `form:"page" validate:"omitempty,gte=1"`
-	PageSize int              `form:"page_size" validate:"omitempty,gte=1,lte=100"`
+	UserID     int64            `form:"user_id" validate:"omitempty,gte=0"`
+	Type       *TransactionType `form:"type" validate:"omitempty,oneof=income expense"`
+	CategoryID *int64           `form:"category_id" validate:"omitempty"`
+	Page       int              `form:"page" validate:"omitempty,gte=1"`
+	PageSize   int              `form:"page_size" validate:"omitempty,gte=1,lte=100"`
 }
 
 // ProfitRequest represents request to calculate profit over time periods
