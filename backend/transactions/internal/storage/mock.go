@@ -11,7 +11,7 @@ import (
 
 // A fake TransactionRepository that returns placeholder values
 
-type MockRepository struct { 
+type MockRepository struct {
 	mock.Mock
 }
 
@@ -19,7 +19,7 @@ func (r *MockRepository) Create(ctx context.Context, req *models.CreateTransacti
 	args := r.Called(ctx, req)
 	err := args.Error(1)
 	if tr, ok := args.Get(0).(*models.Transaction); ok {
-  		return tr, err
+		return tr, err
 	} else {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (r *MockRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.Tra
 	args := r.Called(ctx, id)
 	err := args.Error(1)
 	if tr, ok := args.Get(0).(*models.Transaction); ok {
-  		return tr, err
+		return tr, err
 	} else {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (r *MockRepository) List(ctx context.Context, filter *models.TransactionFil
 	args := r.Called(ctx, filter)
 	err := args.Error(1)
 	if trl, ok := args.Get(0).(*models.TransactionListResponse); ok {
-  		return trl, err
+		return trl, err
 	} else {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (r *MockRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 	args := r.Called(ctx, id, req)
 	err := args.Error(1)
 	if tr, ok := args.Get(0).(*models.Transaction); ok {
-  		return tr, err
+		return tr, err
 	} else {
 		return nil, err
 	}
@@ -58,6 +58,16 @@ func (r *MockRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 func (r *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := r.Called(ctx, id)
 	return args.Error(0)
+}
+
+func (r *MockRepository) GetCategories(ctx context.Context) (*[]models.Category, error) {
+	args := r.Called(ctx)
+	err := args.Error(1)
+	if cats, ok := args.Get(0).(*[]models.Category); ok {
+		return cats, err
+	} else {
+		return nil, err
+	}
 }
 
 func (r *MockRepository) GetProfitByPeriods(ctx context.Context, userID int64, startDate, endDate time.Time, intervalSeconds int64) ([]models.ProfitDataPoint, error) {

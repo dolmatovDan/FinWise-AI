@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"4d63.com/optional"
+	optional "github.com/denpa16/optional-go-type"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -38,7 +38,7 @@ type Transaction struct {
 // CreateTransactionRequest represents request to create a new transaction
 type CreateTransactionRequest struct {
 	UserID      int64           `json:"user_id" binding:"required" validate:"required,gt=0"`
-	Amount      decimal.Decimal `json:"amount" binding:"required"`
+	Amount      decimal.Decimal `json:"amount" binding:"required" validate:"required,gt=0"`
 	CategoryID  int64           `json:"category_id" binding:"required" validate:"required"`
 	Description string          `json:"description" validate:"omitempty,max=500"`
 	Type        TransactionType `json:"type" binding:"required,oneof=income expense" validate:"required,oneof=income expense"`
@@ -46,10 +46,10 @@ type CreateTransactionRequest struct {
 
 // UpdateTransactionRequest represents request to update a transaction
 type UpdateTransactionRequest struct {
-	Amount      optional.Optional[decimal.Decimal] `json:"amount,omitempty"`
-	CategoryID  optional.Optional[int64]           `json:"category_id,omitempty" validate:"omitempty"`
-	Description optional.Optional[string]          `json:"description,omitempty" validate:"omitempty,max=500"`
-	Type        optional.Optional[TransactionType] `json:"type,omitempty" validate:"omitempty,oneof=income expense"`
+	Amount      optional.OptionalType[decimal.Decimal] `json:"amount,omitempty" validate:"omitempty,gt=0"`
+	CategoryID  optional.OptionalInt64                 `json:"category_id,omitempty" validate:"omitempty"`
+	Description optional.OptionalString                `json:"description,omitempty" validate:"omitempty,max=500"`
+	Type        optional.OptionalType[TransactionType] `json:"type,omitempty" validate:"omitempty,oneof=income expense"`
 }
 
 // TransactionListResponse represents paginated list of transactions
@@ -62,11 +62,11 @@ type TransactionListResponse struct {
 
 // TransactionFilter represents filters for querying transactions
 type TransactionFilter struct {
-	UserID     optional.Optional[int64]           `form:"user_id" validate:"omitempty,gte=1"`
-	Type       optional.Optional[TransactionType] `form:"type" validate:"omitempty,oneof=income expense"`
-	CategoryID optional.Optional[int64]           `form:"category_id" validate:"omitempty"`
-	Page       optional.Optional[int]             `form:"page" validate:"omitempty,gte=1"`
-	PageSize   optional.Optional[int]             `form:"page_size" validate:"omitempty,gte=1,lte=100"`
+	UserID     optional.OptionalInt64                 `form:"user_id" validate:"omitempty,gte=1"`
+	Type       optional.OptionalType[TransactionType] `form:"type" validate:"omitempty,oneof=income expense"`
+	CategoryID optional.OptionalInt64                 `form:"category_id" validate:"omitempty"`
+	Page       optional.OptionalInt                   `form:"page" validate:"omitempty,gte=1"`
+	PageSize   optional.OptionalInt                   `form:"page_size" validate:"omitempty,gte=1,lte=100"`
 }
 
 // ProfitRequest represents request to calculate profit over time periods

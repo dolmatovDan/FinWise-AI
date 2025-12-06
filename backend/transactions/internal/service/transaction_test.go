@@ -3,11 +3,10 @@ package service_test
 import (
 	"context"
 	"log/slog"
-	"strings"
 	"testing"
 	"time"
 
-	"4d63.com/optional"
+	optional "github.com/denpa16/optional-go-type"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/service"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/storage"
@@ -27,7 +26,7 @@ func TestServiceValidator(t *testing.T) {
 		ID:          uuid.New(),
 		UserID:      1,
 		Amount:      dec1,
-		Category:    optional.Of("sonic"),
+		CategoryID:  1,
 		Description: "tails",
 		Type:        models.TransactionTypeIncome,
 		CreatedAt:   time.Now(),
@@ -43,13 +42,17 @@ func TestServiceValidator(t *testing.T) {
 		Page:         1,
 		PageSize:     1,
 	}, nil)
+	repo.On("GetCategories").Return(&[]models.Category{
+		{ID: 1, Name: "Packs", Description: "qwertyuiop"},
+		{ID: 2, Name: "Snacks", Description: "asdfghjkl"},
+		{ID: 3, Name: "Tracks", Description: "zxcvbnm"},
+	}, nil)
 
 	var logger *slog.Logger = slog.Default()
 	serv := service.NewTransactionService(repo, logger)
 
 	// TODO: get rid of string pointers in service implementation
 	strTest := "sonic"
-	strLong := strings.Repeat("sonic", 100)
 	typeExpense := models.TransactionTypeExpense
 	typeIncome := models.TransactionTypeIncome
 	var typeBad models.TransactionType = "knuckles"
@@ -58,7 +61,7 @@ func TestServiceValidator(t *testing.T) {
 		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      1,
 			Amount:      dec1,
-			Category:    "sonic",
+			CategoryID:  1,
 			Description: "tails",
 			Type:        "income",
 		})
@@ -66,32 +69,32 @@ func TestServiceValidator(t *testing.T) {
 		_, err = serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      2,
 			Amount:      dec2,
-			Category:    "knuckles",
+			CategoryID:  2,
 			Description: "",
 			Type:        "expense",
 		})
 		require.Nil(t, err, "valid create request #2 returns an error")
 		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &dec1,
-			Category:    &strTest,
-			Description: &strTest,
-			Type:        &typeIncome,
+			Amount:      newOptionalCustomType[decimal.Decimal](dec1),
+			Description: optional.NewOptionalString(&strTest),
+			Type:        newOptionalCustomType[models.TransactionType](typeIncome),
 		})
 		require.Nil(t, err, "valid update request #1 returns an error")
 		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &dec2,
-			Category:    &strTest,
-			Description: &strTest,
-			Type:        &typeExpense,
+			Amount:     newOptionalCustomType[decimal.Decimal](dec2),
+			CategoryID: newOptionalConstInt64(3),
+			Type:       newOptionalCustomType[models.TransactionType](typeExpense),
 		})
 		require.Nil(t, err, "valid update request #2 returns an error")
+		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{})
+		require.Nil(t, err, "valid update request #3 returns an error")
 	})
 
 	t.Run("TestInvalidUserId", func(t *testing.T) {
 		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      -4,
 			Amount:      dec1,
-			Category:    "sonic",
+			CategoryID:  1,
 			Description: "tails",
 			Type:        "income",
 		})
@@ -99,7 +102,7 @@ func TestServiceValidator(t *testing.T) {
 		_, err = serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      0,
 			Amount:      dec1,
-			Category:    "sonic",
+			CategoryID:  2,
 			Description: "tails",
 			Type:        "expense",
 		})
@@ -110,7 +113,7 @@ func TestServiceValidator(t *testing.T) {
 		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      1,
 			Amount:      decNegative,
-			Category:    "sonic",
+			CategoryID:  1,
 			Description: "tails",
 			Type:        "income",
 		})
@@ -118,110 +121,92 @@ func TestServiceValidator(t *testing.T) {
 		_, err = serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      2,
 			Amount:      decTooLarge,
-			Category:    "sonic",
+			CategoryID:  2,
 			Description: "tails",
 			Type:        "expense",
 		})
 		require.NotNil(t, err, "create request with too large amount passes successfully")
 		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &decNegative,
-			Category:    &strTest,
-			Description: &strTest,
-			Type:        &typeIncome,
+			Amount:      newOptionalCustomType[decimal.Decimal](decNegative),
+			CategoryID:  newOptionalConstInt64(1),
+			Description: optional.NewOptionalString(&strTest),
+			Type:        newOptionalCustomType[models.TransactionType](typeIncome),
 		})
 		require.NotNil(t, err, "update request with negative amount passes successfully")
 		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &decTooLarge,
-			Category:    &strTest,
-			Description: &strTest,
-			Type:        &typeExpense,
+			Amount:      newOptionalCustomType[decimal.Decimal](decTooLarge),
+			CategoryID:  newOptionalConstInt64(2),
+			Description: optional.NewOptionalString(&strTest),
+			Type:        newOptionalCustomType[models.TransactionType](typeExpense),
 		})
 		require.NotNil(t, err, "update request with too large amount passes successfully")
-	})
-
-	t.Run("TestInvalidCategory", func(t *testing.T) {
-		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
-			UserID:      1,
-			Amount:      dec1,
-			Category:    strLong,
-			Description: "tails",
-			Type:        "income",
-		})
-		require.NotNil(t, err, "create request with too long category passes successfully")
-		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &dec1,
-			Category:    &strLong,
-			Description: &strTest,
-			Type:        &typeIncome,
-		})
-		require.NotNil(t, err, "update request with too long category passes successfully")
 	})
 
 	t.Run("TestInvalidType", func(t *testing.T) {
 		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      1,
 			Amount:      dec1,
-			Category:    "sonic",
+			CategoryID:  1,
 			Description: "tails",
 			Type:        "knuckles",
 		})
 		require.NotNil(t, err, "create request with invalid type passes successfully")
 		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &dec1,
-			Category:    &strTest,
-			Description: &strTest,
-			Type:        &typeBad,
+			Amount:      newOptionalCustomType[decimal.Decimal](dec1),
+			CategoryID:  newOptionalConstInt64(2),
+			Description: optional.NewOptionalString(&strTest),
+			Type:        newOptionalCustomType[models.TransactionType](typeBad),
 		})
 		require.NotNil(t, err, "update request with invalid type passes successfully")
 	})
 
 	t.Run("TestInvalidFilter", func(t *testing.T) {
 		_, err := serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   -1,
-			Type:     &typeIncome,
-			Category: &strTest,
-			Page:     1,
-			PageSize: 2,
+			UserID:     newOptionalConstInt64(-1),
+			Type:       newOptionalCustomType[models.TransactionType](typeIncome),
+			CategoryID: newOptionalConstInt64(1),
+			Page:       newOptionalConstInt(1),
+			PageSize:   newOptionalConstInt(2),
 		})
 		require.NotNil(t, err, "list request with filter with invalid ID passes successfully")
 		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeBad,
-			Category: &strTest,
-			Page:     1,
-			PageSize: 1024,
+			UserID:     newOptionalConstInt64(1),
+			Type:       newOptionalCustomType[models.TransactionType](typeBad),
+			CategoryID: newOptionalConstInt64(2),
+			Page:       newOptionalConstInt(1),
+			PageSize:   newOptionalConstInt(1024),
 		})
 		require.NotNil(t, err, "list request with filter with invalid type passes successfully")
 		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeExpense,
-			Category: &strLong,
-			Page:     1,
-			PageSize: 1024,
+			UserID:     newOptionalConstInt64(1),
+			Type:       newOptionalCustomType[models.TransactionType](typeExpense),
+			CategoryID: newOptionalConstInt64(-5),
+			Page:       newOptionalConstInt(1),
+			PageSize:   newOptionalConstInt(1024),
 		})
 		require.NotNil(t, err, "list request with filter with invalid category passes successfully")
 		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeExpense,
-			Category: &strTest,
-			Page:     -5,
-			PageSize: 2,
+			UserID:     newOptionalConstInt64(1),
+			Type:       newOptionalCustomType[models.TransactionType](typeExpense),
+			CategoryID: newOptionalConstInt64(3),
+			Page:       newOptionalConstInt(-5),
+			PageSize:   newOptionalConstInt(2),
 		})
 		require.NotNil(t, err, "list request with filter with negative page passes successfully")
 		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeExpense,
-			Category: &strTest,
-			Page:     3,
-			PageSize: -10,
+			UserID:     newOptionalConstInt64(1),
+			Type:       newOptionalCustomType[models.TransactionType](typeExpense),
+			CategoryID: newOptionalConstInt64(2),
+			Page:       newOptionalConstInt(3),
+			PageSize:   newOptionalConstInt(-10),
 		})
 		require.NotNil(t, err, "list request with filter with negative page size passes successfully")
 		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeExpense,
-			Category: &strTest,
-			Page:     3,
-			PageSize: 0,
+			UserID:     newOptionalConstInt64(1),
+			Type:       newOptionalCustomType[models.TransactionType](typeExpense),
+			CategoryID: newOptionalConstInt64(1),
+			Page:       newOptionalConstInt(3),
+			PageSize:   newOptionalConstInt(0),
 		})
 		require.NotNil(t, err, "list request with filter with zero page size passes successfully")
 	})
@@ -369,4 +354,25 @@ func TestGetProfit(t *testing.T) {
 		require.NotNil(t, resp, "response should not be nil")
 		require.Equal(t, 0, len(resp.Data), "response should have 0 data points")
 	})
+}
+
+// Довольно неудобная библиотека
+
+func newOptionalConstInt(v int) optional.OptionalInt {
+	var val int = v
+	return optional.NewOptionalInt(&val)
+}
+
+func newOptionalConstInt64(v int64) optional.OptionalInt64 {
+	var val int64 = v
+	return optional.NewOptionalInt64(&val)
+}
+
+func newOptionalCustomType[T any](val T) optional.OptionalType[T] {
+	tp := optional.NewOptionalType(&val)
+	return optional.OptionalType[T]{
+		Value:   val,
+		Valid:   tp.Valid,
+		Defined: tp.Defined,
+	}
 }
