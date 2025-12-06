@@ -3,7 +3,6 @@ package service_test
 import (
 	"context"
 	"log/slog"
-	"strings"
 	"testing"
 	"time"
 
@@ -19,14 +18,14 @@ import (
 func TestServiceValidator(t *testing.T) {
 	dec1, _ := decimal.NewFromString("12.34")
 	dec2, _ := decimal.NewFromString("56.78")
-	decNegative, _ := decimal.NewFromString("-12.34")
-	decTooLarge, _ := decimal.NewFromString("123456789123456789123456.512345678")
+	// decNegative, _ := decimal.NewFromString("-12.34")
+	// decTooLarge, _ := decimal.NewFromString("123456789123456789123456.512345678")
 
 	fakeTransaction := models.Transaction{
 		ID:          uuid.New(),
 		UserID:      1,
 		Amount:      dec1,
-		Category:    "sonic",
+		CategoryID:  1,
 		Description: "tails",
 		Type:        models.TransactionTypeIncome,
 		CreatedAt:   time.Now(),
@@ -42,13 +41,20 @@ func TestServiceValidator(t *testing.T) {
 		Page:         1,
 		PageSize:     1,
 	}, nil)
+	repo.On("GetCategories").Return(&[]models.Category{
+		models.Category{ID: 1, Name: "Packs", Description: "qwertyuiop"},
+		models.Category{ID: 2, Name: "Snacks", Description: "asdfghjkl"},
+		models.Category{ID: 1, Name: "Tracks", Description: "zxcvbnm"},
+	})
+
+	var int1 int64 = 1
+	var int2 int64 = 2
 
 	var logger *slog.Logger = slog.Default()
 	serv := service.NewTransactionService(repo, logger)
 
 	// TODO: get rid of string pointers in service implementation
 	strTest := "sonic"
-	strLong := strings.Repeat("sonic", 100)
 	typeExpense := models.TransactionTypeExpense
 	typeIncome := models.TransactionTypeIncome
 	var typeBad models.TransactionType = "knuckles"
@@ -57,7 +63,7 @@ func TestServiceValidator(t *testing.T) {
 		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      1,
 			Amount:      dec1,
-			Category:    "sonic",
+			CategoryID:  1,
 			Description: "tails",
 			Type:        "income",
 		})
@@ -65,21 +71,21 @@ func TestServiceValidator(t *testing.T) {
 		_, err = serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      2,
 			Amount:      dec2,
-			Category:    "knuckles",
+			CategoryID:  2,
 			Description: "",
 			Type:        "expense",
 		})
 		require.Nil(t, err, "valid create request #2 returns an error")
 		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
 			Amount:      &dec1,
-			Category:    &strTest,
+			CategoryID:  &int1,
 			Description: &strTest,
 			Type:        &typeIncome,
 		})
 		require.Nil(t, err, "valid update request #1 returns an error")
 		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
 			Amount:      &dec2,
-			Category:    &strTest,
+			CategoryID:  &int2,
 			Description: &strTest,
 			Type:        &typeExpense,
 		})
@@ -90,7 +96,7 @@ func TestServiceValidator(t *testing.T) {
 		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      -4,
 			Amount:      dec1,
-			Category:    "sonic",
+			CategoryID:  1,
 			Description: "tails",
 			Type:        "income",
 		})
@@ -98,76 +104,25 @@ func TestServiceValidator(t *testing.T) {
 		_, err = serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      0,
 			Amount:      dec1,
-			Category:    "sonic",
+			CategoryID:  2,
 			Description: "tails",
 			Type:        "expense",
 		})
 		require.NotNil(t, err, "request with zero user ID passes successfully")
 	})
 
-	t.Run("TestInvalidAmount", func(t *testing.T) {
-		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
-			UserID:      1,
-			Amount:      decNegative,
-			Category:    "sonic",
-			Description: "tails",
-			Type:        "income",
-		})
-		require.NotNil(t, err, "create request with negative amount passes successfully")
-		_, err = serv.Create(context.Background(), &models.CreateTransactionRequest{
-			UserID:      2,
-			Amount:      decTooLarge,
-			Category:    "sonic",
-			Description: "tails",
-			Type:        "expense",
-		})
-		require.NotNil(t, err, "create request with too large amount passes successfully")
-		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &decNegative,
-			Category:    &strTest,
-			Description: &strTest,
-			Type:        &typeIncome,
-		})
-		require.NotNil(t, err, "update request with negative amount passes successfully")
-		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &decTooLarge,
-			Category:    &strTest,
-			Description: &strTest,
-			Type:        &typeExpense,
-		})
-		require.NotNil(t, err, "update request with too large amount passes successfully")
-	})
-
-	t.Run("TestInvalidCategory", func(t *testing.T) {
-		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
-			UserID:      1,
-			Amount:      dec1,
-			Category:    strLong,
-			Description: "tails",
-			Type:        "income",
-		})
-		require.NotNil(t, err, "create request with too long category passes successfully")
-		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      &dec1,
-			Category:    &strLong,
-			Description: &strTest,
-			Type:        &typeIncome,
-		})
-		require.NotNil(t, err, "update request with too long category passes successfully")
-	})
-
 	t.Run("TestInvalidType", func(t *testing.T) {
 		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
 			UserID:      1,
 			Amount:      dec1,
-			Category:    "sonic",
+			CategoryID:  1,
 			Description: "tails",
 			Type:        "knuckles",
 		})
 		require.NotNil(t, err, "create request with invalid type passes successfully")
 		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
 			Amount:      &dec1,
-			Category:    &strTest,
+			CategoryID:  &int2,
 			Description: &strTest,
 			Type:        &typeBad,
 		})
@@ -176,53 +131,37 @@ func TestServiceValidator(t *testing.T) {
 
 	t.Run("TestInvalidFilter", func(t *testing.T) {
 		_, err := serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   -1,
-			Type:     &typeIncome,
-			Category: &strTest,
-			Page:     1,
-			PageSize: 2,
+			UserID:     -1,
+			Type:       &typeIncome,
+			CategoryID: &int1,
+			Page:       1,
+			PageSize:   2,
 		})
 		require.NotNil(t, err, "list request with filter with invalid ID passes successfully")
 		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeBad,
-			Category: &strTest,
-			Page:     1,
-			PageSize: 1024,
+			UserID:     1,
+			Type:       &typeBad,
+			CategoryID: &int2,
+			Page:       1,
+			PageSize:   1024,
 		})
 		require.NotNil(t, err, "list request with filter with invalid type passes successfully")
 		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeExpense,
-			Category: &strLong,
-			Page:     1,
-			PageSize: 1024,
-		})
-		require.NotNil(t, err, "list request with filter with invalid category passes successfully")
-		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeExpense,
-			Category: &strTest,
-			Page:     -5,
-			PageSize: 2,
+			UserID:     1,
+			Type:       &typeExpense,
+			CategoryID: &int2,
+			Page:       -5,
+			PageSize:   2,
 		})
 		require.NotNil(t, err, "list request with filter with negative page passes successfully")
 		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeExpense,
-			Category: &strTest,
-			Page:     3,
-			PageSize: -10,
+			UserID:     1,
+			Type:       &typeExpense,
+			CategoryID: &int1,
+			Page:       3,
+			PageSize:   -10,
 		})
 		require.NotNil(t, err, "list request with filter with negative page size passes successfully")
-		_, err = serv.List(context.Background(), &models.TransactionFilter{
-			UserID:   1,
-			Type:     &typeExpense,
-			Category: &strTest,
-			Page:     3,
-			PageSize: 0,
-		})
-		require.NotNil(t, err, "list request with filter with zero page size passes successfully")
 	})
 }
 
