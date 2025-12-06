@@ -5,32 +5,25 @@ import (
 	"fmt"
 	"log/slog"
 
-	optional "github.com/denpa16/optional-go-type"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/storage"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 )
 
 // TransactionService handles transaction business logic
 type TransactionService struct {
-	repo   storage.TransactionRepository
-	logger *slog.Logger
+	repo      storage.TransactionRepository
+	logger    *slog.Logger
+	validator *validator.Validate
 }
 
 // NewTransactionService creates a new transaction service instance
 func NewTransactionService(repo storage.TransactionRepository, logger *slog.Logger) *TransactionService {
 	return &TransactionService{
-		repo:   repo,
-		logger: logger,
-	}
-}
-
-func validatorOptionalTypes() optional.OptionalTypes {
-	return optional.OptionalTypes{
-		decimal.Decimal{},
-		optional.OptionalType[models.TransactionType]{},
-		optional.OptionalType[decimal.Decimal]{},
+		repo:      repo,
+		logger:    logger,
+		validator: validator.New(),
 	}
 }
 
@@ -39,7 +32,7 @@ func (s *TransactionService) Create(ctx context.Context, req *models.CreateTrans
 	s.logger.Info("service: creating transaction", "user_id", req.UserID, "type", req.Type)
 
 	// Validate request
-	if err := optional.Validate(req, validatorOptionalTypes()); err != nil {
+	if err := s.validator.Struct(req); err != nil {
 		s.logger.Warn("service: validation failed", "error", err)
 		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
 	}
@@ -73,7 +66,7 @@ func (s *TransactionService) List(ctx context.Context, filter *models.Transactio
 	s.logger.Info("service: listing transactions", "filter", filter)
 
 	// Validate filter
-	if err := optional.Validate(filter, validatorOptionalTypes()); err != nil {
+	if err := s.validator.Struct(filter); err != nil {
 		s.logger.Warn("service: filter validation failed", "error", err)
 		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
 	}
@@ -93,7 +86,7 @@ func (s *TransactionService) Update(ctx context.Context, id uuid.UUID, req *mode
 	s.logger.Info("service: updating transaction", "id", id)
 
 	// Validate request
-	if err := optional.Validate(req, validatorOptionalTypes()); err != nil {
+	if err := s.validator.Struct(req); err != nil {
 		s.logger.Warn("service: validation failed", "error", err)
 		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
 	}
@@ -138,7 +131,7 @@ func (s *TransactionService) GetProfit(ctx context.Context, userID int64, req *m
 	s.logger.Info("service: calculating profit", "user_id", userID, "start_date", req.StartDate, "end_date", req.EndDate, "interval", req.Interval)
 
 	// Validate request
-	if err := optional.Validate(req, validatorOptionalTypes()); err != nil {
+	if err := s.validator.Struct(req); err != nil {
 		s.logger.Warn("service: validation failed", "error", err)
 		return nil, fmt.Errorf("%w: %w", ErrValidation, err)
 	}

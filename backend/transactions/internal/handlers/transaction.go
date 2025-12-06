@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	optional "github.com/denpa16/optional-go-type"
+	"4d63.com/optional"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/middleware"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/service"
@@ -170,7 +170,7 @@ func (h *TransactionHandler) List(c *gin.Context) {
 		return
 	}
 
-	filter.UserID = optional.NewOptionalInt64(&userID)
+	filter.UserID = optional.Of(userID)
 
 	response, err := h.service.List(c.Request.Context(), &filter)
 	if err != nil {

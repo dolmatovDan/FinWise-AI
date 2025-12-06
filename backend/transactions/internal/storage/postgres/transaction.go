@@ -108,25 +108,21 @@ func (ts *TransactionStorage) GetByID(ctx context.Context, id uuid.UUID) (*model
 func (ts *TransactionStorage) List(ctx context.Context, filter *models.TransactionFilter) (*models.TransactionListResponse, error) {
 	ts.storage.logger.Info("fetching transactions list", "filter", filter)
 
-	if filter.CategoryID.Valid {
-		if _, err := getCategoryById(ts, ctx, *filter.CategoryID.Value); err != nil {
+	if categoryID, ok := filter.CategoryID.Get(); ok {
+		if _, err := getCategoryById(ts, ctx, categoryID); err != nil {
 			ts.storage.logger.Error("failed to fetch transactions list", "error", err)
 			return nil, fmt.Errorf("failed to fetch transactions list: %w", err)
 		}
 	}
 
 	// Set default values
-	var filterPage int
-	if filter.Page.Valid {
-		filterPage = *filter.Page.Value
-	} else {
+	filterPage, ok := filter.Page.Get()
+	if !ok {
 		filterPage = 1
 	}
 
-	var filterPageSize int
-	if filter.PageSize.Valid {
-		filterPageSize = *filter.PageSize.Value
-	} else {
+	filterPageSize, ok := filter.PageSize.Get()
+	if !ok {
 		filterPageSize = 10
 	}
 
@@ -135,21 +131,21 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 	args := []interface{}{}
 	argCounter := 1
 
-	if filter.UserID.Valid {
+	if userID, ok := filter.UserID.Get(); ok {
 		whereConditions = append(whereConditions, fmt.Sprintf("user_id = $%d", argCounter))
-		args = append(args, *filter.UserID.Value)
+		args = append(args, userID)
 		argCounter++
 	}
 
-	if filter.Type.Valid {
+	if tp, ok := filter.Type.Get(); ok {
 		whereConditions = append(whereConditions, fmt.Sprintf("type = $%d", argCounter))
-		args = append(args, filter.Type.Value)
+		args = append(args, tp)
 		argCounter++
 	}
 
-	if filter.CategoryID.Valid {
+	if categoryID, ok := filter.CategoryID.Get(); ok {
 		whereConditions = append(whereConditions, fmt.Sprintf("category_id = $%d", argCounter))
-		args = append(args, *filter.CategoryID.Value)
+		args = append(args, categoryID)
 		argCounter++
 	}
 
@@ -222,8 +218,8 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *models.UpdateTransactionRequest) (*models.Transaction, error) {
 	ts.storage.logger.Info("updating transaction", "id", id)
 
-	if req.CategoryID.Valid {
-		if _, err := getCategoryById(ts, ctx, *req.CategoryID.Value); err != nil {
+	if categoryID, ok := req.CategoryID.Get(); ok {
+		if _, err := getCategoryById(ts, ctx, categoryID); err != nil {
 			ts.storage.logger.Error("failed to create transaction", "error", err)
 			return nil, fmt.Errorf("failed to create transaction: %w", err)
 		}
@@ -234,27 +230,27 @@ func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *mod
 	args := []interface{}{}
 	argCounter := 1
 
-	if req.Amount.Valid {
+	if amnt, ok := req.Amount.Get(); ok {
 		setClauses = append(setClauses, fmt.Sprintf("amount = $%d", argCounter))
-		args = append(args, req.Amount.Value)
+		args = append(args, amnt)
 		argCounter++
 	}
 
-	if req.CategoryID.Valid {
+	if categoryID, ok := req.CategoryID.Get(); ok {
 		setClauses = append(setClauses, fmt.Sprintf("category_id = $%d", argCounter))
-		args = append(args, *req.CategoryID.Value)
+		args = append(args, categoryID)
 		argCounter++
 	}
 
-	if req.Description.Valid {
+	if desc, ok := req.Description.Get(); ok {
 		setClauses = append(setClauses, fmt.Sprintf("description = $%d", argCounter))
-		args = append(args, *req.Description.Value)
+		args = append(args, desc)
 		argCounter++
 	}
 
-	if req.Type.Valid {
+	if tp, ok := req.Type.Get(); ok {
 		setClauses = append(setClauses, fmt.Sprintf("type = $%d", argCounter))
-		args = append(args, req.Type.Value)
+		args = append(args, tp)
 		argCounter++
 	}
 
