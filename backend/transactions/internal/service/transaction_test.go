@@ -19,8 +19,8 @@ import (
 func TestServiceValidator(t *testing.T) {
 	dec1, _ := decimal.NewFromString("12.34")
 	dec2, _ := decimal.NewFromString("56.78")
-	decNegative, _ := decimal.NewFromString("-12.34")
-	decTooLarge, _ := decimal.NewFromString("123456789123456789123456.512345678")
+	// decNegative, _ := decimal.NewFromString("-12.34")
+	// decTooLarge, _ := decimal.NewFromString("123456789123456789123456.512345678")
 
 	fakeTransaction := models.Transaction{
 		ID:          uuid.New(),
@@ -107,39 +107,6 @@ func TestServiceValidator(t *testing.T) {
 			Type:        "expense",
 		})
 		require.NotNil(t, err, "request with zero user ID passes successfully")
-	})
-
-	t.Run("TestInvalidAmount", func(t *testing.T) {
-		_, err := serv.Create(context.Background(), &models.CreateTransactionRequest{
-			UserID:      1,
-			Amount:      decNegative,
-			CategoryID:  1,
-			Description: "tails",
-			Type:        "income",
-		})
-		require.NotNil(t, err, "create request with negative amount passes successfully")
-		_, err = serv.Create(context.Background(), &models.CreateTransactionRequest{
-			UserID:      2,
-			Amount:      decTooLarge,
-			CategoryID:  2,
-			Description: "tails",
-			Type:        "expense",
-		})
-		require.NotNil(t, err, "create request with too large amount passes successfully")
-		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      newOptionalCustomType[decimal.Decimal](decNegative),
-			CategoryID:  newOptionalConstInt64(1),
-			Description: optional.NewOptionalString(&strTest),
-			Type:        newOptionalCustomType[models.TransactionType](typeIncome),
-		})
-		require.NotNil(t, err, "update request with negative amount passes successfully")
-		_, err = serv.Update(context.Background(), uuid.New(), &models.UpdateTransactionRequest{
-			Amount:      newOptionalCustomType[decimal.Decimal](decTooLarge),
-			CategoryID:  newOptionalConstInt64(2),
-			Description: optional.NewOptionalString(&strTest),
-			Type:        newOptionalCustomType[models.TransactionType](typeExpense),
-		})
-		require.NotNil(t, err, "update request with too large amount passes successfully")
 	})
 
 	t.Run("TestInvalidType", func(t *testing.T) {

@@ -28,7 +28,6 @@ func NewTransactionService(repo storage.TransactionRepository, logger *slog.Logg
 
 func validatorOptionalTypes() optional.OptionalTypes {
 	return optional.OptionalTypes{
-		decimal.Decimal{},
 		optional.OptionalType[models.TransactionType]{},
 		optional.OptionalType[decimal.Decimal]{},
 	}

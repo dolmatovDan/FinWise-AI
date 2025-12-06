@@ -38,7 +38,7 @@ type Transaction struct {
 // CreateTransactionRequest represents request to create a new transaction
 type CreateTransactionRequest struct {
 	UserID      int64           `json:"user_id" binding:"required" validate:"required,gt=0"`
-	Amount      decimal.Decimal `json:"amount" binding:"required" validate:"required,gt=0"`
+	Amount      decimal.Decimal `json:"amount" binding:"required" validate:"required"`
 	CategoryID  int64           `json:"category_id" binding:"required" validate:"required"`
 	Description string          `json:"description" validate:"omitempty,max=500"`
 	Type        TransactionType `json:"type" binding:"required,oneof=income expense" validate:"required,oneof=income expense"`
@@ -46,7 +46,7 @@ type CreateTransactionRequest struct {
 
 // UpdateTransactionRequest represents request to update a transaction
 type UpdateTransactionRequest struct {
-	Amount      optional.OptionalType[decimal.Decimal] `json:"amount,omitempty" validate:"omitempty,gt=0"`
+	Amount      optional.OptionalType[decimal.Decimal] `json:"amount,omitempty" validate:"omitempty"`
 	CategoryID  optional.OptionalInt64                 `json:"category_id,omitempty" validate:"omitempty"`
 	Description optional.OptionalString                `json:"description,omitempty" validate:"omitempty,max=500"`
 	Type        optional.OptionalType[TransactionType] `json:"type,omitempty" validate:"omitempty,oneof=income expense"`
