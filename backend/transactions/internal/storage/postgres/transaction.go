@@ -108,19 +108,22 @@ func (ts *TransactionStorage) GetByID(ctx context.Context, id uuid.UUID) (*model
 func (ts *TransactionStorage) List(ctx context.Context, filter *models.TransactionFilter) (*models.TransactionListResponse, error) {
 	ts.storage.logger.Info("fetching transactions list", "filter", filter)
 
-	if filter.CategoryID != nil {
-		if _, err := getCategoryById(ts, ctx, *filter.CategoryID); err != nil {
+	if categoryID, ok := filter.CategoryID.Get(); ok {
+		if _, err := getCategoryById(ts, ctx, categoryID); err != nil {
 			ts.storage.logger.Error("failed to fetch transactions list", "error", err)
 			return nil, fmt.Errorf("failed to fetch transactions list: %w", err)
 		}
 	}
 
 	// Set default values
-	if filter.Page == 0 {
-		filter.Page = 1
+	filterPage, ok := filter.Page.Get()
+	if !ok {
+		filterPage = 1
 	}
-	if filter.PageSize == 0 {
-		filter.PageSize = 10
+
+	filterPageSize, ok := filter.PageSize.Get()
+	if !ok {
+		filterPageSize = 10
 	}
 
 	// Build WHERE clause
@@ -128,21 +131,21 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 	args := []interface{}{}
 	argCounter := 1
 
-	if filter.UserID != 0 {
+	if userID, ok := filter.UserID.Get(); ok {
 		whereConditions = append(whereConditions, fmt.Sprintf("user_id = $%d", argCounter))
-		args = append(args, filter.UserID)
+		args = append(args, userID)
 		argCounter++
 	}
 
-	if filter.Type != nil {
+	if tp, ok := filter.Type.Get(); ok {
 		whereConditions = append(whereConditions, fmt.Sprintf("type = $%d", argCounter))
-		args = append(args, *filter.Type)
+		args = append(args, tp)
 		argCounter++
 	}
 
-	if filter.CategoryID != nil {
+	if categoryID, ok := filter.CategoryID.Get(); ok {
 		whereConditions = append(whereConditions, fmt.Sprintf("category_id = $%d", argCounter))
-		args = append(args, *filter.CategoryID)
+		args = append(args, categoryID)
 		argCounter++
 	}
 
@@ -158,8 +161,8 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 	}
 
 	// Get transactions
-	offset := (filter.Page - 1) * filter.PageSize
-	args = append(args, filter.PageSize, offset)
+	offset := (filterPage - 1) * filterPageSize
+	args = append(args, filterPageSize, offset)
 
 	query := fmt.Sprintf(`
 		SELECT id, user_id, amount, category_id, description, type, created_at, updated_at
@@ -206,8 +209,8 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 	return &models.TransactionListResponse{
 		Transactions: transactions,
 		Total:        total,
-		Page:         filter.Page,
-		PageSize:     filter.PageSize,
+		Page:         filterPage,
+		PageSize:     filterPageSize,
 	}, nil
 }
 
@@ -215,8 +218,8 @@ func (ts *TransactionStorage) List(ctx context.Context, filter *models.Transacti
 func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *models.UpdateTransactionRequest) (*models.Transaction, error) {
 	ts.storage.logger.Info("updating transaction", "id", id)
 
-	if req.CategoryID != nil {
-		if _, err := getCategoryById(ts, ctx, *req.CategoryID); err != nil {
+	if categoryID, ok := req.CategoryID.Get(); ok {
+		if _, err := getCategoryById(ts, ctx, categoryID); err != nil {
 			ts.storage.logger.Error("failed to create transaction", "error", err)
 			return nil, fmt.Errorf("failed to create transaction: %w", err)
 		}
@@ -227,27 +230,27 @@ func (ts *TransactionStorage) Update(ctx context.Context, id uuid.UUID, req *mod
 	args := []interface{}{}
 	argCounter := 1
 
-	if req.Amount != nil {
+	if amnt, ok := req.Amount.Get(); ok {
 		setClauses = append(setClauses, fmt.Sprintf("amount = $%d", argCounter))
-		args = append(args, *req.Amount)
+		args = append(args, amnt)
 		argCounter++
 	}
 
-	if req.CategoryID != nil {
+	if categoryID, ok := req.CategoryID.Get(); ok {
 		setClauses = append(setClauses, fmt.Sprintf("category_id = $%d", argCounter))
-		args = append(args, *req.CategoryID)
+		args = append(args, categoryID)
 		argCounter++
 	}
 
-	if req.Description != nil {
+	if desc, ok := req.Description.Get(); ok {
 		setClauses = append(setClauses, fmt.Sprintf("description = $%d", argCounter))
-		args = append(args, *req.Description)
+		args = append(args, desc)
 		argCounter++
 	}
 
-	if req.Type != nil {
+	if tp, ok := req.Type.Get(); ok {
 		setClauses = append(setClauses, fmt.Sprintf("type = $%d", argCounter))
-		args = append(args, *req.Type)
+		args = append(args, tp)
 		argCounter++
 	}
 

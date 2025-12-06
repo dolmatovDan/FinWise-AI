@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"4d63.com/optional"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -45,10 +46,10 @@ type CreateTransactionRequest struct {
 
 // UpdateTransactionRequest represents request to update a transaction
 type UpdateTransactionRequest struct {
-	Amount      *decimal.Decimal `json:"amount,omitempty"`
-	CategoryID  *int64           `json:"category_id,omitempty" validate:"omitempty"`
-	Description *string          `json:"description,omitempty" validate:"omitempty,max=500"`
-	Type        *TransactionType `json:"type,omitempty" validate:"omitempty,oneof=income expense"`
+	Amount      optional.Optional[decimal.Decimal] `json:"amount,omitempty"`
+	CategoryID  optional.Optional[int64]           `json:"category_id,omitempty" validate:"omitempty"`
+	Description optional.Optional[string]          `json:"description,omitempty" validate:"omitempty,max=500"`
+	Type        optional.Optional[TransactionType] `json:"type,omitempty" validate:"omitempty,oneof=income expense"`
 }
 
 // TransactionListResponse represents paginated list of transactions
@@ -61,11 +62,11 @@ type TransactionListResponse struct {
 
 // TransactionFilter represents filters for querying transactions
 type TransactionFilter struct {
-	UserID     int64            `form:"user_id" validate:"omitempty,gte=0"`
-	Type       *TransactionType `form:"type" validate:"omitempty,oneof=income expense"`
-	CategoryID *int64           `form:"category_id" validate:"omitempty"`
-	Page       int              `form:"page" validate:"omitempty,gte=1"`
-	PageSize   int              `form:"page_size" validate:"omitempty,gte=1,lte=100"`
+	UserID     optional.Optional[int64]           `form:"user_id" validate:"omitempty,gte=1"`
+	Type       optional.Optional[TransactionType] `form:"type" validate:"omitempty,oneof=income expense"`
+	CategoryID optional.Optional[int64]           `form:"category_id" validate:"omitempty"`
+	Page       optional.Optional[int]             `form:"page" validate:"omitempty,gte=1"`
+	PageSize   optional.Optional[int]             `form:"page_size" validate:"omitempty,gte=1,lte=100"`
 }
 
 // ProfitRequest represents request to calculate profit over time periods

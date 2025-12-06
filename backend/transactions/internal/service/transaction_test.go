@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"4d63.com/optional"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/models"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/service"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/storage"
@@ -26,7 +27,7 @@ func TestServiceValidator(t *testing.T) {
 		ID:          uuid.New(),
 		UserID:      1,
 		Amount:      dec1,
-		Category:    "sonic",
+		Category:    optional.Of("sonic"),
 		Description: "tails",
 		Type:        models.TransactionTypeIncome,
 		CreatedAt:   time.Now(),
