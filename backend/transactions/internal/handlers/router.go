@@ -6,6 +6,7 @@ import (
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/middleware"
 	"github.com/dolmatovDan/FinWise-AI/backend/transactions/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
@@ -15,6 +16,10 @@ import (
 // SetupRouter sets up the Gin router with all routes
 func SetupRouter(transactionService *service.TransactionService, authMiddleware *middleware.AuthMiddleware, logger *slog.Logger) *gin.Engine {
 	router := gin.Default()
+
+	router.Use(middleware.PrometheusMiddleware())
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})

@@ -4,6 +4,10 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/google/uuid"
 
 	"github.com/dolmatovDan/FinWise-AI/backend/ml-api/internal/models"
 	"github.com/dolmatovDan/FinWise-AI/backend/ml-api/internal/service"
@@ -11,7 +15,6 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// MLApiHandler handles HTTP requests to the ML model api
 type MlApiHandler struct {
 	service *service.MlApiService
 	logger  *slog.Logger
@@ -102,6 +105,65 @@ func (h *MlApiHandler) Advice(c *gin.Context) {
 	}
 
 	h.logger.Info("handler: advice request processed successfully")
+	c.JSON(http.StatusOK, resp)
+}
+
+// ReceiptScan handles POST /api/v1/ml-api/receipt/scan
+// @Summary Scan a receipt image and extract total amount
+// @Tags ml-api
+// @Accept multipart/form-data
+// @Produce json
+// @Param file formData file true "Receipt image file"
+// @Success 200 {object} models.ReceiptScanResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/receipt/scan [post]
+func (h *MlApiHandler) ReceiptScan(c *gin.Context) {
+	h.logger.Info("handler: receipt scan request")
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		h.logger.Warn("handler: failed to get file", "error", err)
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error: "File is required (field name: file)",
+		})
+		return
+	}
+
+	uploadDir := "/app/uploads"
+	if err := os.MkdirAll(uploadDir, 0o755); err != nil {
+		h.logger.Error("handler: failed to create upload dir", "error", err, "dir", uploadDir)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "Failed to prepare upload directory",
+		})
+		return
+	}
+
+	filename := "receipt_" + uuid.NewString() + filepath.Ext(file.Filename)
+	fullPath := filepath.Join(uploadDir, filename)
+
+	if err := c.SaveUploadedFile(file, fullPath); err != nil {
+		h.logger.Error("handler: failed to save uploaded file", "error", err, "path", fullPath)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: "Failed to save uploaded file",
+		})
+		return
+	}
+
+	defer os.Remove(fullPath)
+
+	resp, err := h.service.ScanReceipt(c.Request.Context(), models.ReceiptFilePath(fullPath))
+	if err != nil {
+		h.logger.Error("handler: failed to scan receipt", "error", err)
+		if errors.Is(err, service.ErrValidation) {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to scan receipt"})
+		return
+	}
+
+	h.logger.Info("handler: receipt scanned successfully")
 	c.JSON(http.StatusOK, resp)
 }
 
