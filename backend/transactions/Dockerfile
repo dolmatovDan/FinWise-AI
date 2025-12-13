@@ -16,6 +16,9 @@ RUN go mod download
 # Copy source code
 COPY transactions/ ./transactions/
 
+# Copy auth keys for JWT validation
+COPY auth/keys/public.pem ./auth/keys/public.pem
+
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s" \
@@ -42,8 +45,8 @@ RUN chmod +x app
 # Copy migrations
 COPY --from=builder /build/transactions/migrations ./migrations
 
-# Copy JWT public key
-COPY --from=builder /build/transactions/keys ./keys
+# Copy JWT public key from auth service
+COPY --from=builder /build/auth/keys/public.pem ./keys/public.pem
 
 # Change ownership
 RUN chown -R appuser:appuser /app

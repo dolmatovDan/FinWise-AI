@@ -29,7 +29,7 @@ type Transaction struct {
 
 // CreateTransactionRequest represents request to create a new transaction
 type CreateTransactionRequest struct {
-	UserID      int64           `json:"user_id" binding:"required" validate:"required,gt=0"`
+	UserID      int64           `json:"-" validate:"required,gt=0"`
 	Amount      decimal.Decimal `json:"amount" binding:"required"`
 	Category    string          `json:"category" binding:"required" validate:"required,min=1,max=100"`
 	Description string          `json:"description" validate:"omitempty,max=500"`
