@@ -25,6 +25,9 @@ type TransactionRepository interface {
 	// Delete deletes a transaction
 	Delete(ctx context.Context, id uuid.UUID) error
 
+	// GetCategories gets all transaction categories
+	GetCategories(ctx context.Context) (*[]models.Category, error)
+
 	// GetProfitByPeriods calculates profit (income - expense) aggregated by time periods
 	GetProfitByPeriods(ctx context.Context, userID int64, startDate, endDate time.Time, intervalSeconds int64) ([]models.ProfitDataPoint, error)
 }

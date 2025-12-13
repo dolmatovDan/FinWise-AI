@@ -39,6 +39,7 @@ func SetupRouter(transactionService *service.TransactionService, authMiddleware 
 			transactions.GET("/:id", transactionHandler.GetByID)
 			transactions.PUT("/:id", transactionHandler.Update)
 			transactions.DELETE("/:id", transactionHandler.Delete)
+			transactions.GET("/categories", transactionHandler.GetCategories)
 			transactions.POST("/profit", transactionHandler.GetProfit)
 		}
 	}

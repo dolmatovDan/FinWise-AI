@@ -42,6 +42,7 @@ type ErrorResponse struct {
 // @Param transaction body models.CreateTransactionRequest true "Transaction data"
 // @Success 201 {object} models.Transaction
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/transactions [post]
 func (h *TransactionHandler) Create(c *gin.Context) {
@@ -69,6 +70,10 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 	transaction, err := h.service.Create(c.Request.Context(), &req)
 	if err != nil {
 		h.logger.Error("handler: failed to create transaction", "error", err)
+		if strings.Contains(err.Error(), "category not found") {
+			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Category not found"})
+			return
+		}
 		if errors.Is(err, service.ErrValidation) {
 			c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 			return
@@ -88,6 +93,7 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 // @Param id path string true "Transaction ID (UUID)"
 // @Success 200 {object} models.Transaction
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/transactions/{id} [get]
@@ -140,6 +146,7 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 // @Param page_size query int false "Page size (default: 10, max: 100)"
 // @Success 200 {object} models.TransactionListResponse
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/transactions [get]
 func (h *TransactionHandler) List(c *gin.Context) {
@@ -194,6 +201,7 @@ func (h *TransactionHandler) List(c *gin.Context) {
 // @Param transaction body models.UpdateTransactionRequest true "Updated transaction data"
 // @Success 200 {object} models.Transaction
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/transactions/{id} [put]
@@ -245,6 +253,10 @@ func (h *TransactionHandler) Update(c *gin.Context) {
 	transaction, err := h.service.Update(c.Request.Context(), id, &req)
 	if err != nil {
 		h.logger.Error("handler: failed to update transaction", "id", id, "error", err)
+		if strings.Contains(err.Error(), "category not found") {
+			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Category not found"})
+			return
+		}
 		if errors.Is(err, service.ErrNotFound) || strings.Contains(err.Error(), "not found") {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Transaction not found"})
 			return
@@ -267,6 +279,7 @@ func (h *TransactionHandler) Update(c *gin.Context) {
 // @Param id path string true "Transaction ID (UUID)"
 // @Success 204
 // @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/transactions/{id} [delete]
@@ -317,6 +330,37 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 
 	h.logger.Info("handler: transaction deleted successfully", "id", id)
 	c.Status(http.StatusNoContent)
+}
+
+// GetCategories handles GET /api/v1/transactions/categories
+// @Summary Get list of all categories
+// @Tags transactions
+// @Produce json
+// @Param id path string true "Transaction ID (UUID)"
+// @Success 200 {object} models.Transaction
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/transactions/categories [get]
+func (h *TransactionHandler) GetCategories(c *gin.Context) {
+	h.logger.Info("handler: fetch categories list")
+
+	_, ok := middleware.GetUserID(c)
+	if !ok {
+		h.logger.Error("handler: user_id not found in context")
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return
+	}
+
+	categories, err := h.service.GetCategories(c.Request.Context())
+	if err != nil {
+		h.logger.Error("handler: failed to fetch categories list", "error", err)
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to fetch categories list"})
+		return
+	}
+
+	h.logger.Info("handler: categories list fetched successfully")
+	c.JSON(http.StatusOK, categories)
 }
 
 // GetProfit handles POST /api/v1/transactions/profit
