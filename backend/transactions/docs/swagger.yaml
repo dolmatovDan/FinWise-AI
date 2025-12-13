@@ -13,10 +13,8 @@ definitions:
     properties:
       amount:
         type: number
-      category:
-        maxLength: 100
-        minLength: 1
-        type: string
+      category_id:
+        type: integer
       description:
         maxLength: 500
         type: string
@@ -26,13 +24,10 @@ definitions:
         enum:
         - income
         - expense
-      user_id:
-        type: integer
     required:
     - amount
-    - category
+    - category_id
     - type
-    - user_id
     type: object
   models.ProfitDataPoint:
     properties:
@@ -67,8 +62,8 @@ definitions:
     properties:
       amount:
         type: number
-      category:
-        type: string
+      category_id:
+        type: integer
       created_at:
         type: string
       description:
@@ -108,10 +103,8 @@ definitions:
     properties:
       amount:
         type: number
-      category:
-        maxLength: 100
-        minLength: 1
-        type: string
+      category_id:
+        type: integer
       description:
         maxLength: 500
         type: string
@@ -170,6 +163,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -198,6 +195,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -218,6 +219,10 @@ paths:
           description: No Content
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
         "404":
@@ -247,6 +252,10 @@ paths:
             $ref: '#/definitions/models.Transaction'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
         "404":
@@ -286,6 +295,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
         "404":
           description: Not Found
           schema:
@@ -295,6 +308,36 @@ paths:
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
       summary: Update a transaction
+      tags:
+      - transactions
+  /api/v1/transactions/categories:
+    get:
+      parameters:
+      - description: Transaction ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Get list of all categories
       tags:
       - transactions
   /api/v1/transactions/profit:
