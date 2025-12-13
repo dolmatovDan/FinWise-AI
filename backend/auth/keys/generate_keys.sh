@@ -11,8 +11,8 @@ PUBLIC_KEY="$SCRIPT_DIR/public.pem"
 
 echo "Generating RSA key pair (2048 bit)..."
 
-# Generate private key
-openssl genrsa -out "$PRIVATE_KEY" 2048
+# Generate private key (use -traditional for PKCS#1 format for compatibility)
+openssl genrsa -traditional -out "$PRIVATE_KEY" 2048 2>/dev/null || openssl genrsa -out "$PRIVATE_KEY" 2048
 echo "✓ Private key generated: $PRIVATE_KEY"
 
 # Extract public key from private key

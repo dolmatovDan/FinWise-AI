@@ -31,7 +31,7 @@ services:
       - ./backend/auth/migrations:/migrations
     command: [
       "-path", "/migrations",
-      "-database", "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-finwise}?sslmode=disable",
+      "-database", "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-finwise}?sslmode=disable&x-migrations-table=schema_migrations_auth",
       "up"
     ]
     networks:
@@ -48,7 +48,7 @@ services:
       - ./backend/transactions/migrations:/migrations
     command: [
       "-path", "/migrations",
-      "-database", "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-finwise}?sslmode=disable",
+      "-database", "postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-finwise}?sslmode=disable&x-migrations-table=schema_migrations_transactions",
       "up"
     ]
     networks:
