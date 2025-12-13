@@ -77,6 +77,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -116,6 +122,58 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/transactions/categories": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Get list of all categories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transaction ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Transaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
@@ -217,6 +275,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -273,6 +337,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -307,6 +377,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
@@ -346,18 +422,15 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "amount",
-                "category",
-                "type",
-                "user_id"
+                "category_id",
+                "type"
             ],
             "properties": {
                 "amount": {
                     "type": "number"
                 },
-                "category": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 1
+                "category_id": {
+                    "type": "integer"
                 },
                 "description": {
                     "type": "string",
@@ -373,9 +446,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.TransactionType"
                         }
                     ]
-                },
-                "user_id": {
-                    "type": "integer"
                 }
             }
         },
@@ -428,8 +498,8 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
-                "category": {
-                    "type": "string"
+                "category_id": {
+                    "type": "integer"
                 },
                 "created_at": {
                     "type": "string"
@@ -489,10 +559,8 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
-                "category": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 1
+                "category_id": {
+                    "type": "integer"
                 },
                 "description": {
                     "type": "string",
