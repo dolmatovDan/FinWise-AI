@@ -8,11 +8,12 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+
 android {
     namespace = "com.spbsu_team7.finwise"
     compileSdk = 36
 
-
+    android.buildFeatures.buildConfig = true
 
     defaultConfig {
         applicationId = "com.spbsu_team7.finwise"
@@ -20,8 +21,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -31,13 +32,21 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL_AUTH", "\"http://10.159.181.110:8082\"")
+            buildConfigField("String", "BASE_URL_USER", "\"http://10.159.181.110:8080\"")
+        }
+
+        debug {
+            buildConfigField("String", "BASE_URL_AUTH", "\"http://10.159.181.110:8082\"")
+            buildConfigField("String", "BASE_URL_USER", "\"http://10.159.181.110:8080\"")
         }
     }
 
-        compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
-        }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
 
     hilt {
         enableAggregatingTask = false

@@ -58,7 +58,7 @@ class ViewModel @Inject constructor (
 ) : ViewModel() {
 
     private val repository: Repository by lazy {
-        sessionManager.getOrCreateRepository()
+        sessionManager.getRepository()
     }
 
     val uiState =
@@ -117,8 +117,4 @@ class ViewModel @Inject constructor (
     @Composable
     fun getState() = uiState.collectAsState().value
 
-    override fun onCleared() {
-        super.onCleared()
-        sessionManager.releaseRepository()
-    }
 }

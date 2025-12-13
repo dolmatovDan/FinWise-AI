@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.spbsu_team7.finwise.app.ui.util.WhileUiSubscribed
 import com.spbsu_team7.finwise.core.repository.AuthRepository
+import com.spbsu_team7.finwise.core.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,9 +31,7 @@ sealed interface AuthUiState {
 }
 
 @HiltViewModel
-class AuthViewModel @Inject constructor (
-    private val authRepository: AuthRepository
-) : ViewModel() {
+class AuthViewModel @Inject constructor() : ViewModel() {
     private val _email = MutableStateFlow("")
     private val _password = MutableStateFlow("")
 
@@ -46,9 +45,6 @@ class AuthViewModel @Inject constructor (
             initialValue = AuthUiState.Loading
         )
 
-    init {
-        authRepository.logout()
-    }
     fun changeEmail(email: String) {
         _email.value = email
     }
@@ -57,11 +53,4 @@ class AuthViewModel @Inject constructor (
         _password.value = password
     }
 
-    suspend fun login() = authRepository.login(_email.value, _password.value)
-
-    fun logout() {
-        authRepository.logout()
-    }
-
-    fun onRetry() {}
 }

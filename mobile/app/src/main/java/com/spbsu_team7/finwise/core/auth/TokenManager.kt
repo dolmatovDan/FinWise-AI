@@ -27,9 +27,6 @@ class TokenManager (
         prefs.edit(commit = true) { clear() }
     }
 
-    fun refreshTokens() {
+    fun isLogged() = prefs.contains("refresh_token")
 
-    }
-
-    fun isLoggedIn(): Boolean = getAccessToken() != null
 }

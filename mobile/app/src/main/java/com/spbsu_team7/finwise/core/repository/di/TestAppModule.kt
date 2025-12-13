@@ -1,6 +1,8 @@
 package com.spbsu_team7.finwise.core.repository.di
 
 import android.content.Context
+import com.spbsu_team7.finwise.BuildConfig
+import com.spbsu_team7.finwise.app.NavigationActionsFactory
 import com.spbsu_team7.finwise.core.auth.AuthInterceptor
 import com.spbsu_team7.finwise.core.auth.TokenManager
 import com.spbsu_team7.finwise.core.network.ApiService
@@ -32,15 +34,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object TestAppModule {
-
-
-//    @Provides
-//    @Singleton
-//    fun provideAuthRepository(
-//    ): AuthRepository = TestAuthRepository()
-
-private val _serverUrl = "http://10.159.181.110" //Debug ip
-
     @Provides
     @Singleton
     fun provideAuthApiService(): AuthApiService {
@@ -48,7 +41,7 @@ private val _serverUrl = "http://10.159.181.110" //Debug ip
             .build()
 
         return Retrofit.Builder()
-            .baseUrl("${_serverUrl}:8082")
+            .baseUrl(BuildConfig.BASE_URL_AUTH)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -61,9 +54,8 @@ private val _serverUrl = "http://10.159.181.110" //Debug ip
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .build()
-
         return Retrofit.Builder()
-            .baseUrl("${_serverUrl}:8080")
+            .baseUrl(BuildConfig.BASE_URL_USER)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -73,7 +65,15 @@ private val _serverUrl = "http://10.159.181.110" //Debug ip
 
     @Provides
     @Singleton
-    fun provideSessionManager(repositoryProvider: Provider<Repository>) = SessionManager(repositoryProvider)
+    fun provideSessionManager(repositoryProvider: Provider<Repository>, tokenManager: TokenManager, authRepository: AuthRepository)
+                    = SessionManager(repositoryProvider, tokenManager, authRepository, CoroutineScope(SupervisorJob() + Dispatchers.IO))
+
+
+    @Provides
+    @Singleton
+    fun provideNavigationActionsFactory(sessionManager: SessionManager)
+            = NavigationActionsFactory(sessionManager)
+
 
     @Provides
     fun provideUserRepository(
@@ -88,25 +88,13 @@ private val _serverUrl = "http://10.159.181.110" //Debug ip
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class TokenModule {
+object AuthModule {
+
     @Singleton
-    @Binds
-    abstract fun bindAuthRepository(testAuthRepository: ApiAuthRepository): AuthRepository
+    @Provides
+    fun provideUserRepository(tokenManager: TokenManager,
+                              apiService: AuthApiService
+    ): AuthRepository = if (BuildConfig.DEBUG) TestAuthRepository(tokenManager = tokenManager)
+                        else ApiAuthRepository(tokenManager = tokenManager, authService = apiService)
+
 }
-
-//@Module
-//@InstallIn(SingletonComponent::class)
-//abstract class RepositoryModule {
-//
-////    @Singleton
-////    @Binds
-////    abstract fun bindTaskRepository(repository: TestRepository): Repository
-//
-//    @Singleton
-//    @Binds
-//    abstract fun bindAuthRepository(authRepository: TestAuthRepository): AuthRepository
-//}
-
-@Qualifier
-@Retention()
-annotation class ApplicationScope

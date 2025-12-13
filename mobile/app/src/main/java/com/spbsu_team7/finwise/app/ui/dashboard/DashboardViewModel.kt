@@ -62,7 +62,7 @@ class DashboardViewModel @Inject constructor (
 ) : ViewModel() {
     private val filterType =  savedStateHandle.getStateFlow(TRANSACTIONS_FILTER_SAVED_STATE_KEY, LAST_3MONTHS)
     private val repository: Repository by lazy {
-        sessionManager.getOrCreateRepository()
+        sessionManager.getRepository()
     }
     private val filteredIncomeExpense =
         combine(
@@ -118,11 +118,6 @@ class DashboardViewModel @Inject constructor (
     @Composable
     fun getState() = uiState.collectAsState().value
 
-    override fun onCleared() {
-        super.onCleared()
-        sessionManager.releaseRepository()
-        Log.d("DasboardVM", "destroyed")
-    }
 }
 
 val TRANSACTIONS_FILTER_SAVED_STATE_KEY = "TRANSACTIONS_FILTER_SAVED_STATE_KEY"

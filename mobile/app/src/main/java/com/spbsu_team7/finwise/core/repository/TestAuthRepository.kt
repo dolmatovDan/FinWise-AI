@@ -25,4 +25,8 @@ class TestAuthRepository @Inject constructor(private val tokenManager: TokenMana
         tokenManager.clearTokens()
     }
 
+    override fun refresh(refreshToken: String): String? {
+        return tokenManager.getAccessToken()
+    }
+
 }
