@@ -15,6 +15,7 @@ import com.spbsu_team7.finwise.app.ui.auth.AuthViewModel
 import com.spbsu_team7.finwise.app.ui.special.ErrorScreen
 import com.spbsu_team7.finwise.app.ui.special.LoadingScreen
 import com.spbsu_team7.finwise.core.auth.TokenManager
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 
@@ -30,10 +31,12 @@ fun Navigation(
         composable("auth") {
             val viewModel: AuthViewModel = hiltViewModel()
             AuthScreen(viewModel = viewModel) {
-                if (viewModel.login())
-                    navController.navigate("user") {
-                        popUpTo("auth") { inclusive = true }
-                    }
+                runBlocking {
+                    if (viewModel.login())
+                        navController.navigate("user") {
+                            popUpTo("auth") { inclusive = true }
+                        }
+                }
             }
         }
 

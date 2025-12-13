@@ -5,6 +5,7 @@ import com.spbsu_team7.finwise.core.auth.AuthInterceptor
 import com.spbsu_team7.finwise.core.auth.TokenManager
 import com.spbsu_team7.finwise.core.network.ApiService
 import com.spbsu_team7.finwise.core.network.AuthApiService
+import com.spbsu_team7.finwise.core.repository.ApiAuthRepository
 import com.spbsu_team7.finwise.core.repository.AuthRepository
 import com.spbsu_team7.finwise.core.repository.Repository
 import com.spbsu_team7.finwise.core.repository.TestAuthRepository
@@ -38,7 +39,7 @@ object TestAppModule {
 //    fun provideAuthRepository(
 //    ): AuthRepository = TestAuthRepository()
 
-
+private val _serverUrl = "http://10.159.181.110" //Debug ip
 
     @Provides
     @Singleton
@@ -47,7 +48,7 @@ object TestAppModule {
             .build()
 
         return Retrofit.Builder()
-            .baseUrl("https://your-api.com/")
+            .baseUrl("${_serverUrl}:8082")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -62,7 +63,7 @@ object TestAppModule {
             .build()
 
         return Retrofit.Builder()
-            .baseUrl("https://your-api.com/")
+            .baseUrl("${_serverUrl}:8080")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -90,9 +91,7 @@ object TestAppModule {
 abstract class TokenModule {
     @Singleton
     @Binds
-    abstract fun bindAuthRepository(testAuthRepository: TestAuthRepository): AuthRepository
-
-
+    abstract fun bindAuthRepository(testAuthRepository: ApiAuthRepository): AuthRepository
 }
 
 //@Module

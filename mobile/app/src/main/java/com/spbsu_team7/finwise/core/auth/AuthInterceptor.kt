@@ -1,5 +1,6 @@
 package com.spbsu_team7.finwise.core.auth
 
+import android.util.Log
 import com.spbsu_team7.finwise.core.network.AuthApiService
 import com.spbsu_team7.finwise.core.repository.AuthRepository
 import okhttp3.Interceptor

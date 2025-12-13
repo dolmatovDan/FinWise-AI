@@ -57,7 +57,7 @@ class AuthViewModel @Inject constructor (
         _password.value = password
     }
 
-    fun login() = authRepository.login(_email.value, _password.value)
+    suspend fun login() = authRepository.login(_email.value, _password.value)
 
     fun logout() {
         authRepository.logout()
