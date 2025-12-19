@@ -54,12 +54,13 @@ sealed interface UiState {
 
 @HiltViewModel
 class ViewModel @Inject constructor (
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val repository: Repository
 ) : ViewModel() {
 
-    private val repository: Repository by lazy {
-        sessionManager.getRepository()
-    }
+//    private val repository: Repository by lazy {
+//        sessionManager.getRepository()
+//    }
 
     val uiState =
         combine(repository.transactions, repository.categories, repository.advices){

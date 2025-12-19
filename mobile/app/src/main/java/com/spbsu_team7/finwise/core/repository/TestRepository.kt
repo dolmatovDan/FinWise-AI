@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirlineSeatIndividualSuite
 import androidx.compose.material.icons.filled.Dining
-import androidx.compose.material.icons.filled.EmojiFoodBeverage
 import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.LocalMovies
 import androidx.compose.material.icons.filled.Money
@@ -26,32 +25,26 @@ import com.spbsu_team7.finwise.core.model.Status
 import com.spbsu_team7.finwise.core.model.TransactionToSend
 import com.spbsu_team7.finwise.core.model.UserColor
 import com.spbsu_team7.finwise.core.model.UserIcon
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.spbsu_team7.finwise.core.network.ApiService
+import com.spbsu_team7.finwise.core.network.NewTransaction
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.Date
-import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.sortedBy
 import kotlin.math.absoluteValue
+import kotlin.time.ExperimentalTime
+import kotlin.time.toJavaInstant
 
 @Singleton
 class TestRepository (
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val apiService: ApiService
 ) : Repository {
 
     val categoryList = mutableListOf(
@@ -60,6 +53,7 @@ class TestRepository (
         CategoryToSend(2, "Пополнение проездного", 1, 8),
         CategoryToSend(3, "Продукты", 7, 6),
         CategoryToSend(4, "Жильё", 9, 7),
+        CategoryToSend(5, "groceries", 9, 7),
     )
 
     val transactionList = mutableListOf(
@@ -195,21 +189,50 @@ class TestRepository (
         }
     }
 
+    val networkToModelId = HashMap<String, Int>()
+    var idCnt = 0
+
+    @OptIn(ExperimentalTime::class)
     suspend fun refreshTransactions() {
+        val resE = apiService.userTransactions("expense")
+        val resI = apiService.userTransactions("income")
+        if (!resE.isSuccessful || !resI.isSuccessful) {
+          Log.e("trans", "${resE.message()} ${resI.message()}")
+        }
+        else {
+            Log.d("trans", "loaded ${resE.body()?.total ?: ""}")
+        }
         _transactions.value = when (categories.value) {
             is Async.Error -> Async.Error((categories.value as Async.Error).errorMessage)
             is Async.Loading -> Async.Loading
             else -> try {
-                Async.Success(transactionList.map { tr ->
-                    Transaction(
-                        id = tr.id,
-                        name = tr.name,
-                        date = tr.date,
-                        amount = tr.amount,
-                        category = (categories.value as Async.Success<List<Category>>).data.get(tr.categoryId)
+                if (resE.body() == null || resI.body() == null) {
+                    Async.Error("response body is null")
+                } else {
+                    idCnt = 0
+                    networkToModelId.clear()
+                    Async.Success(resE.body()!!.transactions.union(resI.body()!!.transactions).map { tr ->
+                        networkToModelId[tr.id] = idCnt++
+                        Transaction(
+                            id = idCnt,
+                            name = tr.description,
+                            date = kotlin.time.Instant.parse(tr.createdAt).toJavaInstant(),
+                            amount = tr.amount.toInt(),
+                            category = (categories.value as Async.Success<List<Category>>).data.first { it.name == tr.category }
+                        )
+                    }
                     )
                 }
-                )
+//                Async.Success(transactionList.map { tr ->
+//                    Transaction(
+//                        id = tr.id,
+//                        name = tr.name,
+//                        date = tr.date,
+//                        amount = tr.amount,
+//                        category = (categories.value as Async.Success<List<Category>>).data.get(tr.categoryId)
+//                    )
+//                }
+//                )
             } catch(e: Exception) {
                 Async.Error(e.message ?: "")
             }
@@ -229,7 +252,23 @@ class TestRepository (
     override suspend fun getColors(): List<UserColor> = CollectColors()
 
     override suspend fun sendTransaction(transaction: TransactionToSend) {
-        transactionList.add(transaction.copy(id = transactionList.size))
+        val res = apiService.sendTransaction(
+            NewTransaction(
+                user_id = 1,
+                type = if (transaction.amount > 0) "income" else "expense" ,
+                amount = transaction.amount.toFloat(),
+                description = transaction.name,
+                category = categoryList[transaction.categoryId].name
+            )
+        )
+        if (res.isSuccessful && res.body() != null){
+            Log.d("send", res.body()!!.user_id.toString())
+        }
+        else {
+            Log.e("send", "${res.code()} ${res.message()}")
+        }
+
+        //transactionList.add(transaction.copy(id = transactionList.size))
         refreshTransactions()
         refreshLastMonth()
         refreshLast3Months()

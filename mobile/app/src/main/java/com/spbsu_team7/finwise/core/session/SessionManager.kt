@@ -16,7 +16,7 @@ import javax.inject.Singleton
 
 @Singleton
 class SessionManager @Inject constructor(
-    private val providerRepository: Provider<Repository>,
+//    private val providerRepository: Provider<Repository>,
     private val tokenManager: TokenManager,
     private val authRepository: AuthRepository,
     private val coroutineScope: CoroutineScope
@@ -48,7 +48,7 @@ class SessionManager @Inject constructor(
 
     fun tryLogin() {
         if (tokenManager.isLogged()) {
-            currentRepository = providerRepository.get()
+            //currentRepository = providerRepository.get()
             _sessionState.value = SessionState.USER
         }
     }
@@ -57,15 +57,15 @@ class SessionManager @Inject constructor(
         coroutineScope.launch {
             val res = authRepository.login(email, password)
             if (res) {
-                currentRepository = providerRepository.get()
+                //currentRepository = providerRepository.get()
                 _sessionState.value = SessionState.USER
             }
         }
     }
 
-    fun getRepository(): Repository {
-        return currentRepository!!
-    }
+//    fun getRepository(): Repository {
+//        return currentRepository!!
+//    }
 
     private fun releaseRepository() {
         currentRepository = null

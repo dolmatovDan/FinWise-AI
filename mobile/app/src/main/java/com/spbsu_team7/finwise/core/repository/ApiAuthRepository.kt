@@ -5,6 +5,7 @@ import com.spbsu_team7.finwise.core.auth.TokenManager
 import com.spbsu_team7.finwise.core.network.AuthApiService
 import com.spbsu_team7.finwise.core.network.LoginData
 import com.spbsu_team7.finwise.core.repository.di.TestAppModule
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 class ApiAuthRepository @Inject constructor(private val tokenManager: TokenManager, private val authService: AuthApiService) : AuthRepository {
@@ -24,10 +25,22 @@ class ApiAuthRepository @Inject constructor(private val tokenManager: TokenManag
     }
 
     override fun logout() {
+        if (tokenManager.getRefreshToken() != null)
+            runBlocking {authService.logout(tokenManager.getRefreshToken()!!)}
         tokenManager.clearTokens()
     }
 
     override fun refresh(refreshToken: String): String? {
-        return ""
+        if (tokenManager.getAccessToken() == null) {
+            logout()
+            return null
+        }
+        val res = runBlocking {authService.refresh(tokenManager.getAccessToken()!!)}
+        if (res.isSuccessful && res.body() != null) {
+            tokenManager.saveTokens(res.body()!!.accessToken, res.body()!!.refreshToken)
+            return res.body()!!.accessToken
+        }
+        logout()
+        return null
     }
 }

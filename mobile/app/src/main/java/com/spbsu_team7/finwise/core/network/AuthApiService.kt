@@ -10,6 +10,12 @@ import java.time.Instant
 interface AuthApiService {
     @POST("/api/v1/auth/login")
     suspend fun login(@Body loginData: LoginData) : Response<LoginResult>
+
+    @POST("/api/v1/auth/refresh")
+    suspend fun refresh(@Body refreshToken: String): Response<LoginResult>
+
+    @POST("/api/v1/auth/logout")
+    suspend fun logout(@Body refreshToken: String): Response<Unit>
 }
 
 data class LoginData(val email: String, val password: String)

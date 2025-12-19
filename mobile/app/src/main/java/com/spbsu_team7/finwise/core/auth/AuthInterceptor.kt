@@ -21,7 +21,7 @@ class AuthInterceptor @Inject constructor(
             .newBuilder()
 
         val request = requestBuilder
-            .header("Authorization", "${sessionManager.getAccessToken()}")
+            .header("Authorization", "Bearer ${sessionManager.getAccessToken()}")
             .build()
 
         var response = chain.proceed(request)
@@ -31,7 +31,7 @@ class AuthInterceptor @Inject constructor(
             val newToken = sessionManager.refreshToken()
             if (newToken != null) {
                 val newRequest = requestBuilder
-                    .header("Authorization", newToken)
+                    .header("Authorization", "Bearer $newToken")
                     .build()
                 return chain.proceed(newRequest)
             }

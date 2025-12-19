@@ -58,12 +58,13 @@ sealed interface DashboardUiState {
 @HiltViewModel
 class DashboardViewModel @Inject constructor (
     private val sessionManager: SessionManager,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val repository: Repository
 ) : ViewModel() {
     private val filterType =  savedStateHandle.getStateFlow(TRANSACTIONS_FILTER_SAVED_STATE_KEY, LAST_3MONTHS)
-    private val repository: Repository by lazy {
-        sessionManager.getRepository()
-    }
+//    private val repository: Repository by lazy {
+//        sessionManager.getRepository()
+//    }
     private val filteredIncomeExpense =
         combine(
             repository.lastMonth,

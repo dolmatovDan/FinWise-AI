@@ -66,7 +66,7 @@ object TestAppModule {
     @Provides
     @Singleton
     fun provideSessionManager(repositoryProvider: Provider<Repository>, tokenManager: TokenManager, authRepository: AuthRepository)
-                    = SessionManager(repositoryProvider, tokenManager, authRepository, CoroutineScope(SupervisorJob() + Dispatchers.IO))
+                    = SessionManager(/*repositoryProvider,*/ tokenManager, authRepository, CoroutineScope(SupervisorJob() + Dispatchers.IO))
 
 
     @Provides
@@ -77,7 +77,9 @@ object TestAppModule {
 
     @Provides
     fun provideUserRepository(
-    ): Repository = TestRepository(CoroutineScope(SupervisorJob() + Dispatchers.IO))
+        apiService: ApiService
+    ): Repository = TestRepository(
+        CoroutineScope(SupervisorJob() + Dispatchers.IO), apiService)
 
     @Provides
     @Singleton
@@ -94,7 +96,7 @@ object AuthModule {
     @Provides
     fun provideUserRepository(tokenManager: TokenManager,
                               apiService: AuthApiService
-    ): AuthRepository = if (BuildConfig.DEBUG) TestAuthRepository(tokenManager = tokenManager)
-                        else ApiAuthRepository(tokenManager = tokenManager, authService = apiService)
+    ): AuthRepository = /*if (BuildConfig.DEBUG) TestAuthRepository(tokenManager = tokenManager)
+                        else*/ ApiAuthRepository(tokenManager = tokenManager, authService = apiService)
 
 }

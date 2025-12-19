@@ -32,13 +32,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL_AUTH", "\"http://10.159.181.110:8082\"")
-            buildConfigField("String", "BASE_URL_USER", "\"http://10.159.181.110:8080\"")
+            buildConfigField("String", "BASE_URL_AUTH", "\"http://10.132.38.110:8082\"")
+            buildConfigField("String", "BASE_URL_USER", "\"http://10.132.38.110:8080\"")
         }
 
         debug {
-            buildConfigField("String", "BASE_URL_AUTH", "\"http://10.159.181.110:8082\"")
-            buildConfigField("String", "BASE_URL_USER", "\"http://10.159.181.110:8080\"")
+            buildConfigField("String", "BASE_URL_AUTH", "\"http://10.132.38.110:8082\"")
+            buildConfigField("String", "BASE_URL_USER", "\"http://10.132.38.110:8080\"")
         }
     }
 
