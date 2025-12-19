@@ -75,7 +75,7 @@ fun MainScreen(logout: () -> Unit) {
                 .fillMaxSize()
         ) {page ->
             when (page) {
-                0 -> DashboardScreen()
+                0 -> DashboardScreen(dashboardViewModel)
                 1 -> TransactionsScreen(mainViewModel.getState(), mainViewModel.getEvents())
                 2 -> CategoriesScreen(mainViewModel.getState(), mainViewModel.getEvents())
                 3 -> ChatBotScreen(mainViewModel.getState(), mainViewModel.getEvents())

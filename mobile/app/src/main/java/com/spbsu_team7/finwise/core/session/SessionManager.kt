@@ -42,6 +42,7 @@ class SessionManager @Inject constructor(
     }
 
     fun logout() {
+        authRepository.logout()
         _sessionState.value = SessionState.AUTH
         releaseRepository()
     }

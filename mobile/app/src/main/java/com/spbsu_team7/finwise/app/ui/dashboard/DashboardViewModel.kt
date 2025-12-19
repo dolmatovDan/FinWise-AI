@@ -33,9 +33,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-
-
-
 data class DashboardEvents(
     val onRetry: () -> Unit
 )
@@ -86,8 +83,7 @@ class DashboardViewModel @Inject constructor (
             repository.last3MonthsCatExp,
             repository.lastYearCatExp,
             filterType
-        ) {
-                month, months3, year, type ->
+        ) { month, months3, year, type ->
             when (type) {
                 LAST_MONTH -> month
                 LAST_3MONTHS -> month

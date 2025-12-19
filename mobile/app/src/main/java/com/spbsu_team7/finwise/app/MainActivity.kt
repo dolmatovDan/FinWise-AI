@@ -22,7 +22,7 @@ class MainActivity (): ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FinanceTheme {
-                Navigation( navFactory)
+                Navigation(navFactory)
             }
         }
     }

@@ -24,7 +24,7 @@ class AuthInterceptor @Inject constructor(
             .header("Authorization", "Bearer ${sessionManager.getAccessToken()}")
             .build()
 
-        var response = chain.proceed(request)
+        val response = chain.proceed(request)
 
         if (response.code() == 401) {
             response.close()

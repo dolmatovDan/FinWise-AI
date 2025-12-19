@@ -49,11 +49,17 @@ import java.util.Date
 import kotlin.time.Instant
 
 @Composable
-fun ChartsSection(transactions: Async<Stat> ,categoriesExpense: Async<Map<Category, Int>>, changeFilter: (FilterTypes) -> Unit, filter: FilterTypes) {
+fun ChartsSection(
+    transactions: Async<Stat>,
+    categoriesExpense: Async<Map<Category, Int>>,
+    changeFilter: (FilterTypes) -> Unit, filter: FilterTypes
+) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
         Surface(
-            modifier = Modifier.fillMaxWidth().weight(0.4f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.4f),
             shape = MaterialTheme.shapes.medium,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
@@ -64,7 +70,9 @@ fun ChartsSection(transactions: Async<Stat> ,categoriesExpense: Async<Map<Catego
             }
         }
         Surface(
-            modifier = Modifier.fillMaxWidth().weight(0.6f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.6f),
             shape = MaterialTheme.shapes.medium,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
@@ -107,11 +115,14 @@ fun Filters(
             val color = if (selectedFilter == type) MaterialTheme.colorScheme.surface
             else MaterialTheme.colorScheme.secondaryContainer
             Surface(
-                modifier = Modifier.fillMaxSize().weight(1f).border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = MaterialTheme.shapes.medium
-                )
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = MaterialTheme.shapes.medium
+                    )
                     .padding(0.dp)
                     .clickable(
                         onClick = { onChange(type) },
@@ -181,7 +192,7 @@ fun IncomeExpensePieChart(categoriesIncome: Map<Category, Int>) {
     var showLegend by remember {
         mutableStateOf(false)
     }
-    var data by remember {
+    var data by remember(categoriesIncome) {
         mutableStateOf(
             categoriesIncome.map { Pie(label = it.key.name, data = it.value.toDouble(), color = it.key.color) }
         )
@@ -190,36 +201,44 @@ fun IncomeExpensePieChart(categoriesIncome: Map<Category, Int>) {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        PieChart(
-            modifier = Modifier.fillMaxSize(fraction = 0.8f),
-            data = data,
-            onPieClick = {
-                val pieIndex = data.indexOf(it)
-                showLegend = !it.selected
-                data = data.mapIndexed { mapIndex, pie -> pie.copy(selected = showLegend && (pieIndex == mapIndex)) }
-            },
-            selectedScale = 1.0f,
-            scaleAnimEnterSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            colorAnimEnterSpec = tween(300),
-            colorAnimExitSpec = tween(300),
-            scaleAnimExitSpec = tween(300),
-            spaceDegreeAnimExitSpec = tween(300),
-            style = Pie.Style.Fill
-        )
+        if (categoriesIncome.isNotEmpty()) {
+            Log.d("chart", "data size ${categoriesIncome.size}")
+            PieChart(
+                modifier = Modifier.fillMaxSize(fraction = 0.8f),
+                data = data,
+                onPieClick = {
+                    val pieIndex = data.indexOf(it)
+                    showLegend = !it.selected
+                    data =
+                        data.mapIndexed { mapIndex, pie -> pie.copy(selected = showLegend && (pieIndex == mapIndex)) }
+                },
+                selectedScale = 1.0f,
+                scaleAnimEnterSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                ),
+                colorAnimEnterSpec = tween(300),
+                colorAnimExitSpec = tween(300),
+                scaleAnimExitSpec = tween(300),
+                spaceDegreeAnimExitSpec = tween(300),
+                style = Pie.Style.Fill
+            )
+        }
+        else Log.d("chart", "data is empty")
         if (showLegend) {
             val selectedPie = data.first { it.selected }
             Row(
-                Modifier.fillMaxSize()
+                Modifier
+                    .fillMaxSize()
                     .padding(horizontal = 35.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Card(
                     colors = CardColors(selectedPie.color, selectedPie.color, selectedPie.color, selectedPie.color),
-                    modifier = Modifier.fillMaxSize(0.05f).aspectRatio(1f)
+                    modifier = Modifier
+                        .fillMaxSize(0.05f)
+                        .aspectRatio(1f)
                 ){}
                 Spacer(modifier = Modifier.width(5.dp))
                 Text("${selectedPie.label!!}: ${selectedPie.data.toInt()} ₽")

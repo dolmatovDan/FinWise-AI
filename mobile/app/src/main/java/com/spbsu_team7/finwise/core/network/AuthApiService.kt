@@ -12,7 +12,7 @@ interface AuthApiService {
     suspend fun login(@Body loginData: LoginData) : Response<LoginResult>
 
     @POST("/api/v1/auth/refresh")
-    suspend fun refresh(@Body refreshToken: String): Response<LoginResult>
+    suspend fun refresh(@Body refreshBody: RefreshBody): Response<LoginResult>
 
     @POST("/api/v1/auth/logout")
     suspend fun logout(@Body refreshToken: String): Response<Unit>
@@ -32,4 +32,8 @@ data class LoginResult(
     @SerializedName("access_token") val accessToken: String,
     @SerializedName("refresh_token") val refreshToken: String,
     val user: UserData
+)
+
+data class RefreshBody(
+    val refresh_token: String
 )

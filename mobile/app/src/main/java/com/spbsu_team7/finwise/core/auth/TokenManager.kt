@@ -22,7 +22,6 @@ class TokenManager (
     fun getAccessToken() = prefs.getString("access_token", null)
     fun getRefreshToken() = prefs.getString("refresh_token", null)
 
-
     fun clearTokens() {
         prefs.edit(commit = true) { clear() }
     }

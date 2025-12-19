@@ -12,6 +12,7 @@ import com.spbsu_team7.finwise.core.repository.AuthRepository
 import com.spbsu_team7.finwise.core.repository.Repository
 import com.spbsu_team7.finwise.core.repository.TestAuthRepository
 import com.spbsu_team7.finwise.core.repository.TestRepository
+import com.spbsu_team7.finwise.core.repository.TransactionsRepository
 import com.spbsu_team7.finwise.core.session.SessionManager
 import dagger.Binds
 import dagger.Module
@@ -39,7 +40,6 @@ object TestAppModule {
     fun provideAuthApiService(): AuthApiService {
         val okHttpClient = OkHttpClient.Builder()
             .build()
-
         return Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL_AUTH)
             .client(okHttpClient)
@@ -65,20 +65,29 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideSessionManager(repositoryProvider: Provider<Repository>, tokenManager: TokenManager, authRepository: AuthRepository)
-                    = SessionManager(/*repositoryProvider,*/ tokenManager, authRepository, CoroutineScope(SupervisorJob() + Dispatchers.IO))
+    fun provideSessionManager(
+        repositoryProvider: Provider<Repository>,
+        tokenManager: TokenManager,
+        authRepository: AuthRepository
+    ) = SessionManager(
+        /*repositoryProvider,*/
+        tokenManager,
+        authRepository,
+        CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    )
 
 
     @Provides
     @Singleton
-    fun provideNavigationActionsFactory(sessionManager: SessionManager)
-            = NavigationActionsFactory(sessionManager)
+    fun provideNavigationActionsFactory(sessionManager: SessionManager) =
+        NavigationActionsFactory(sessionManager)
 
 
     @Provides
+    @Singleton
     fun provideUserRepository(
         apiService: ApiService
-    ): Repository = TestRepository(
+    ): Repository = TransactionsRepository(
         CoroutineScope(SupervisorJob() + Dispatchers.IO), apiService)
 
     @Provides
@@ -97,6 +106,10 @@ object AuthModule {
     fun provideUserRepository(tokenManager: TokenManager,
                               apiService: AuthApiService
     ): AuthRepository = /*if (BuildConfig.DEBUG) TestAuthRepository(tokenManager = tokenManager)
-                        else*/ ApiAuthRepository(tokenManager = tokenManager, authService = apiService)
+                        else*/
+        ApiAuthRepository(
+            tokenManager = tokenManager,
+            authService = apiService
+        )
 
 }

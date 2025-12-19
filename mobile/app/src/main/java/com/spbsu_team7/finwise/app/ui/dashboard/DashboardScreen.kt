@@ -19,13 +19,14 @@ import com.spbsu_team7.finwise.app.ui.special.LoadingScreen
 
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = hiltViewModel()
+    viewModel: DashboardViewModel
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+        val uiStateFlow = viewModel.uiState
+        val uiState = uiStateFlow.collectAsStateWithLifecycle().value
         when (uiState) {
             is DashboardUiState.Success -> {
                 Column(
