@@ -1,0 +1,5 @@
+FROM migrate/migrate:latest
+
+COPY auth/migrations /migrations
+
+ENTRYPOINT ["migrate"]

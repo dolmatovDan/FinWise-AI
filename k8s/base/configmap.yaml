@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: finwise-config
+  namespace: finwise
+data:
+  # Database configuration
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "finwise"
+  DB_SSLMODE: "disable"
+
+  # Server configuration
+  SERVER_HOST: "0.0.0.0"
+
+  # Logging configuration
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+
+  # JWT configuration
+  JWT_ACCESS_TOKEN_TTL: "15m"
+  JWT_REFRESH_TOKEN_TTL: "720h"

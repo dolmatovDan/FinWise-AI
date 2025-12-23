@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: finwise
+
+resources:
+  # Namespace
+  - base/namespace.yaml
+
+  # Secrets
+  - secrets/postgres-secret.yaml
+  - secrets/jwt-keys-secret.yaml
+
+  # ConfigMaps and Base Infrastructure
+  - base/configmap.yaml
+  - base/postgres.yaml
+
+  # Migration Jobs
+  - jobs/migrate-auth.yaml
+  - jobs/migrate-transactions.yaml
+
+  # Application Services
+  - base/auth.yaml
+  - base/transactions.yaml
+  - base/ml-api.yaml
+
+  # Monitoring
+  - base/prometheus.yaml
+
+  # Ingress
+  - base/ingress.yaml

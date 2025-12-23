@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+  namespace: finwise
+spec:
+  selector:
+    app: auth
+  ports:
+    - port: 8082
+      targetPort: 8082
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: finwise
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth
+        # TODO: Replace with your actual Docker image
+        image: finwise-auth:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8082
+        env:
+        - name: SERVER_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: SERVER_HOST
+        - name: SERVER_PORT
+          value: "8082"
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: DB_NAME
+        - name: DB_SSLMODE
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: DB_SSLMODE
+        - name: JWT_PRIVATE_KEY_PATH
+          value: "/keys/private.pem"
+        - name: JWT_PUBLIC_KEY_PATH
+          value: "/keys/public.pem"
+        - name: JWT_ACCESS_TOKEN_TTL
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: JWT_ACCESS_TOKEN_TTL
+        - name: JWT_REFRESH_TOKEN_TTL
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: JWT_REFRESH_TOKEN_TTL
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: LOG_LEVEL
+        - name: LOG_FORMAT
+          valueFrom:
+            configMapKeyRef:
+              name: finwise-config
+              key: LOG_FORMAT
+        volumeMounts:
+        - name: jwt-keys
+          mountPath: /keys
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8082
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8082
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: jwt-keys
+        secret:
+          secretName: jwt-keys
