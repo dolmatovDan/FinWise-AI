@@ -26,3 +26,6 @@ resources:
 
   # Monitoring
   - base/prometheus.yaml
+
+  # Ingress
+  - base/ingress.yaml
