@@ -30,7 +30,7 @@ export function RegisterPage({ onRegister, onNavigateToLogin }: RegisterPageProp
           </div>
           <CardTitle>Создать аккаунт</CardTitle>
           <CardDescription>
-            Начните управлять своими финансами с FinWase AI
+            Начните управлять своими финансами с FinWise AI
           </CardDescription>
         </CardHeader>
         <CardContent>

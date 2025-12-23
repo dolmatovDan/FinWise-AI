@@ -194,7 +194,7 @@ export default function App() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl">FinWase AI</h1>
+                <h1 className="text-xl">FinWise AI</h1>
                 <p className="text-sm text-muted-foreground">
                   Привет, {user.name}!
                 </p>

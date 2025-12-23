@@ -1,7 +1,7 @@
 
-  # FinWase AI Finance App
+  # FinWise AI Finance App
 
-  This is a code bundle for FinWase AI Finance App. The original project is available at https://www.figma.com/design/pbFgJ0GfAOMSir3iYTQJtT/FinWase-AI-Finance-App.
+  This is a code bundle for FinWise AI Finance App. The original project is available at https://www.figma.com/design/pbFgJ0GfAOMSir3iYTQJtT/FinWase-AI-Finance-App.
 
   ## Running the code
 
