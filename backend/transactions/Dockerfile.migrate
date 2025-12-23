@@ -1,0 +1,6 @@
+FROM migrate/migrate:latest
+
+COPY transactions/migrations /migrations
+
+ENTRYPOINT ["migrate"]
+
