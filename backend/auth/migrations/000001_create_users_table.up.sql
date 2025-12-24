@@ -11,6 +11,15 @@ CREATE TABLE IF NOT EXISTS "user" (
 -- Create index for email lookups
 CREATE INDEX idx_user_email ON "user"(email);
 
+-- Create function to automatically update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
 -- TODO: Add foreign key constraint later when implementing JWT authentication
 -- ALTER TABLE transaction
 --     ADD CONSTRAINT fk_transaction_user_id

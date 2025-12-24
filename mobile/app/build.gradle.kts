@@ -8,11 +8,12 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+
 android {
     namespace = "com.spbsu_team7.finwise"
     compileSdk = 36
 
-
+    android.buildFeatures.buildConfig = true
 
     defaultConfig {
         applicationId = "com.spbsu_team7.finwise"
@@ -20,8 +21,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -31,13 +32,21 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL_AUTH", "\"http://10.132.38.110:8082\"")
+            buildConfigField("String", "BASE_URL_USER", "\"http://10.132.38.110:8080\"")
+        }
+
+        debug {
+            buildConfigField("String", "BASE_URL_AUTH", "\"http://10.132.38.110:8082\"")
+            buildConfigField("String", "BASE_URL_USER", "\"http://10.132.38.110:8080\"")
         }
     }
 
-        compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
-        }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
 
     hilt {
         enableAggregatingTask = false
@@ -57,6 +66,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation("androidx.camera:camera-camera2:1.5.2")
+    implementation("androidx.camera:camera-core:1.5.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -4,6 +4,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface AuthRepository {
-    fun login(email: String, password: String): Boolean
+    suspend fun login(email: String, password: String): Boolean
+
     fun logout()
+
+    fun refresh(refreshToken: String): String?
 }

@@ -33,9 +33,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-
-
-
 data class DashboardEvents(
     val onRetry: () -> Unit
 )
@@ -58,12 +55,13 @@ sealed interface DashboardUiState {
 @HiltViewModel
 class DashboardViewModel @Inject constructor (
     private val sessionManager: SessionManager,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val repository: Repository
 ) : ViewModel() {
     private val filterType =  savedStateHandle.getStateFlow(TRANSACTIONS_FILTER_SAVED_STATE_KEY, LAST_3MONTHS)
-    private val repository: Repository by lazy {
-        sessionManager.getOrCreateRepository()
-    }
+//    private val repository: Repository by lazy {
+//        sessionManager.getRepository()
+//    }
     private val filteredIncomeExpense =
         combine(
             repository.lastMonth,
@@ -85,8 +83,7 @@ class DashboardViewModel @Inject constructor (
             repository.last3MonthsCatExp,
             repository.lastYearCatExp,
             filterType
-        ) {
-                month, months3, year, type ->
+        ) { month, months3, year, type ->
             when (type) {
                 LAST_MONTH -> month
                 LAST_3MONTHS -> month
@@ -118,11 +115,6 @@ class DashboardViewModel @Inject constructor (
     @Composable
     fun getState() = uiState.collectAsState().value
 
-    override fun onCleared() {
-        super.onCleared()
-        sessionManager.releaseRepository()
-        Log.d("DasboardVM", "destroyed")
-    }
 }
 
 val TRANSACTIONS_FILTER_SAVED_STATE_KEY = "TRANSACTIONS_FILTER_SAVED_STATE_KEY"

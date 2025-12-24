@@ -33,7 +33,7 @@ fun SummarySectionContent(status: Status, modifier: Modifier = Modifier) {
     ) {
         SummaryCard(title = "Доход", amount = status.income.toString() + " ₽", color = IncomeGreen,  modifier = Modifier.weight(1f))
         SummaryCard(title = "Расход", amount = status.expence.toString() + " ₽", color = ExpenseRed, modifier = Modifier.weight(1f))
-        SummaryCard(title = "Баланс", amount = status.balance.toString() + " ₽", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+        SummaryCard(title = "Разница", amount = status.balance.toString() + " ₽", color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
     }
 }
 

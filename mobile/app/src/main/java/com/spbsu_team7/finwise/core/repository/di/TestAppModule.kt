@@ -1,14 +1,18 @@
 package com.spbsu_team7.finwise.core.repository.di
 
 import android.content.Context
+import com.spbsu_team7.finwise.BuildConfig
+import com.spbsu_team7.finwise.app.NavigationActionsFactory
 import com.spbsu_team7.finwise.core.auth.AuthInterceptor
 import com.spbsu_team7.finwise.core.auth.TokenManager
 import com.spbsu_team7.finwise.core.network.ApiService
 import com.spbsu_team7.finwise.core.network.AuthApiService
+import com.spbsu_team7.finwise.core.repository.ApiAuthRepository
 import com.spbsu_team7.finwise.core.repository.AuthRepository
 import com.spbsu_team7.finwise.core.repository.Repository
 import com.spbsu_team7.finwise.core.repository.TestAuthRepository
 import com.spbsu_team7.finwise.core.repository.TestRepository
+import com.spbsu_team7.finwise.core.repository.TransactionsRepository
 import com.spbsu_team7.finwise.core.session.SessionManager
 import dagger.Binds
 import dagger.Module
@@ -31,23 +35,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object TestAppModule {
-
-
-//    @Provides
-//    @Singleton
-//    fun provideAuthRepository(
-//    ): AuthRepository = TestAuthRepository()
-
-
-
     @Provides
     @Singleton
     fun provideAuthApiService(): AuthApiService {
         val okHttpClient = OkHttpClient.Builder()
             .build()
-
         return Retrofit.Builder()
-            .baseUrl("https://your-api.com/")
+            .baseUrl(BuildConfig.BASE_URL_AUTH)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -60,9 +54,8 @@ object TestAppModule {
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .build()
-
         return Retrofit.Builder()
-            .baseUrl("https://your-api.com/")
+            .baseUrl(BuildConfig.BASE_URL_USER)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -72,11 +65,30 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideSessionManager(repositoryProvider: Provider<Repository>) = SessionManager(repositoryProvider)
+    fun provideSessionManager(
+        repositoryProvider: Provider<Repository>,
+        tokenManager: TokenManager,
+        authRepository: AuthRepository
+    ) = SessionManager(
+        /*repositoryProvider,*/
+        tokenManager,
+        authRepository,
+        CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    )
+
 
     @Provides
+    @Singleton
+    fun provideNavigationActionsFactory(sessionManager: SessionManager) =
+        NavigationActionsFactory(sessionManager)
+
+
+    @Provides
+    @Singleton
     fun provideUserRepository(
-    ): Repository = TestRepository(CoroutineScope(SupervisorJob() + Dispatchers.IO))
+        apiService: ApiService
+    ): Repository = TestRepository(
+        CoroutineScope(SupervisorJob() + Dispatchers.IO), apiService)
 
     @Provides
     @Singleton
@@ -87,27 +99,16 @@ object TestAppModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class TokenModule {
-    @Singleton
-    @Binds
-    abstract fun bindAuthRepository(testAuthRepository: TestAuthRepository): AuthRepository
+object AuthModule {
 
+    @Singleton
+    @Provides
+    fun provideUserRepository(tokenManager: TokenManager,
+                              apiService: AuthApiService
+    ): AuthRepository = /*if (BuildConfig.DEBUG) TestAuthRepository(tokenManager = tokenManager)
+                        else*/
+        TestAuthRepository(
+            tokenManager = tokenManager
+        )
 
 }
-
-//@Module
-//@InstallIn(SingletonComponent::class)
-//abstract class RepositoryModule {
-//
-////    @Singleton
-////    @Binds
-////    abstract fun bindTaskRepository(repository: TestRepository): Repository
-//
-//    @Singleton
-//    @Binds
-//    abstract fun bindAuthRepository(authRepository: TestAuthRepository): AuthRepository
-//}
-
-@Qualifier
-@Retention()
-annotation class ApplicationScope

@@ -14,7 +14,7 @@ class TestAuthRepository @Inject constructor(private val tokenManager: TokenMana
     private val testEmail = ""
     private val testPassword = "1"
 
-    override fun login(email: String, password: String): Boolean {
+    override suspend fun login(email: String, password: String): Boolean {
         return if (email == testEmail && password == testPassword) {
             tokenManager.saveTokens(testAccessToken, testRefreshToken)
             true
@@ -23,6 +23,10 @@ class TestAuthRepository @Inject constructor(private val tokenManager: TokenMana
 
     override fun logout() {
         tokenManager.clearTokens()
+    }
+
+    override fun refresh(refreshToken: String): String? {
+        return tokenManager.getAccessToken()
     }
 
 }

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.LocalCafe
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -27,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.spbsu_team7.finwise.app.Events
 import com.spbsu_team7.finwise.app.UiState
@@ -35,6 +38,9 @@ import com.spbsu_team7.finwise.app.ui.special.LoadingScreen
 
 import com.spbsu_team7.finwise.app.ui.transactions.transaction.AddTransactionSection
 import com.spbsu_team7.finwise.app.ui.transactions.transaction.TransactionsTable
+import com.spbsu_team7.finwise.core.model.Category
+import com.spbsu_team7.finwise.core.model.Transaction
+import java.time.Instant
 
 @Composable
 fun TransactionsScreen(uiState: UiState, events: Events) {
@@ -69,7 +75,9 @@ fun TransactionsScreen(uiState: UiState, events: Events) {
                             )
                         }
                     }
-                    AddTransactionSection(expanded, { expanded = !expanded },uiState.categories, events.sendTransaction)
+                    AddTransactionSection(expanded, { expanded = !expanded },uiState.categories, events.sendTransaction, {
+                        listOf(Transaction(1, "Бефстроганов с грибами и гречкой, морс малина маракуйя", Instant.now(), 378, Category(1, "Кафе", Icons.Default.LocalCafe, Color(0, 255, 0))))
+                    })
                 }
             }
             is UiState.Loading -> {

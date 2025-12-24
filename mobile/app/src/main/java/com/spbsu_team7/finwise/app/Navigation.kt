@@ -1,48 +1,66 @@
 package com.spbsu_team7.finwise.app
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.spbsu_team7.finwise.app.ui.MainScreen
-import com.spbsu_team7.finwise.app.ui.auth.AuthScreen
-import com.spbsu_team7.finwise.app.ui.auth.AuthUiState
-import com.spbsu_team7.finwise.app.ui.auth.AuthViewModel
-import com.spbsu_team7.finwise.app.ui.special.ErrorScreen
-import com.spbsu_team7.finwise.app.ui.special.LoadingScreen
-import com.spbsu_team7.finwise.core.auth.TokenManager
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.spbsu_team7.finwise.app.Screens.AUTH_SCREEN
+import com.spbsu_team7.finwise.app.Screens.USER_SCREEN
+import com.spbsu_team7.finwise.core.session.SessionManager
+import com.spbsu_team7.finwise.core.session.SessionState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
-@Composable
-fun Navigation(
-) {
+private object Screens {
+    const val AUTH_SCREEN = "auth"
+    const val USER_SCREEN = "user"
+}
+
+object Destinations {
+    const val AUTH_ROUTE = AUTH_SCREEN
+    const val USER_ROUTE = USER_SCREEN
+}
 
 
-    val navController = rememberNavController()
+@Singleton
+class NavigationActionsFactory @Inject constructor (private val sessionManager: SessionManager) {
+    fun create(navController: NavHostController, coroutineScope: CoroutineScope ) = NavigationActions(sessionManager, navController, coroutineScope)
+}
+class NavigationActions (private val sessionManager: SessionManager, private val navController: NavHostController, coroutineScope: CoroutineScope ) {
+    init {
+        coroutineScope.launch {
 
-    NavHost(navController, startDestination = "auth") {
-
-        composable("auth") {
-            val viewModel: AuthViewModel = hiltViewModel()
-            AuthScreen(viewModel = viewModel) {
-                if (viewModel.login())
-                    navController.navigate("user") {
-                        popUpTo("auth") { inclusive = true }
+            sessionManager.sessionState.drop(1).collect {
+                if (it == SessionState.AUTH) {
+                    navController.navigate(Destinations.AUTH_ROUTE) {
+                        popUpTo(0)
                     }
-            }
-        }
-
-        composable("user") {
-            MainScreen {
-                navController.navigate("auth") {
-                    popUpTo("user") { inclusive = true }
+                }
+                else if (it == SessionState.USER) {
+                    navController.navigate(Destinations.USER_ROUTE) {
+                        popUpTo(0)
+                    }
                 }
             }
         }
     }
+
+    fun start() = if (sessionManager.sessionState.value == SessionState.AUTH) Destinations.AUTH_ROUTE
+                else Destinations.USER_ROUTE
+
+    fun navigateToAuth() {
+        sessionManager.logout()
+    }
+
+    fun navigateToUser(login: String, password: String) {
+        sessionManager.login(
+            login, password
+        )
+    }
+
 }
