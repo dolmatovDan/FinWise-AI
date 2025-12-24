@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 
@@ -58,6 +59,17 @@ func normalizeSentenceSmart(s string) string {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return s
+	}
+
+	const badSentenceRegex string = "(\\.|!|\\?|…)\\s*[a-zа-яё]|\\.\\s*\\."
+
+	if re, err := regexp.Compile(badSentenceRegex); err == nil {
+		if idx := re.FindStringIndex(s); idx != nil {
+			trimmed := strings.TrimSpace(s[:idx[0]+1])
+			if trimmed != "" {
+				return trimmed
+			}
+		}
 	}
 
 	lastRune, _ := utf8.DecodeLastRuneInString(s)
