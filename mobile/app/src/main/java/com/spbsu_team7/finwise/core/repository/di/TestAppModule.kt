@@ -87,7 +87,7 @@ object TestAppModule {
     @Singleton
     fun provideUserRepository(
         apiService: ApiService
-    ): Repository = TransactionsRepository(
+    ): Repository = TestRepository(
         CoroutineScope(SupervisorJob() + Dispatchers.IO), apiService)
 
     @Provides
@@ -107,9 +107,8 @@ object AuthModule {
                               apiService: AuthApiService
     ): AuthRepository = /*if (BuildConfig.DEBUG) TestAuthRepository(tokenManager = tokenManager)
                         else*/
-        ApiAuthRepository(
-            tokenManager = tokenManager,
-            authService = apiService
+        TestAuthRepository(
+            tokenManager = tokenManager
         )
 
 }
